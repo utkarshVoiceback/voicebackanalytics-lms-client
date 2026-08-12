@@ -1,6 +1,8 @@
+'use client';
+
 import { useEffect, useState, FormEvent } from 'react';
-import api from '../api/axios';
-import { Role, SafeUser } from '../types';
+import api from '@/lib/api/axios';
+import { Role, SafeUser } from '@/types';
 
 interface Message {
   type: 'success' | 'error';

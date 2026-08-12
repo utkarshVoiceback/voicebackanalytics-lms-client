@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
-import UploadForm from '../components/UploadForm';
-import ContentList from '../components/ContentList';
-import UserManagement from './UserManagement';
+import UploadForm from '../UploadForm';
+import ContentList from '../ContentList';
+import UserManagement from '../UserManagement';
 
 type Tab = 'content' | 'users';
 

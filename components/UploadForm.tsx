@@ -1,25 +1,8 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
-import api from '../api/axios';
-import { ContentItem } from '../types';
+'use client';
 
-const ACCEPTED = [
-  '.ppt',
-  '.pptx',
-  '.pdf',
-  '.mp4',
-  '.mov',
-  '.avi',
-  '.mkv',
-  '.webm',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'application/pdf',
-  'video/mp4',
-  'video/quicktime',
-  'video/x-msvideo',
-  'video/x-matroska',
-  'video/webm',
-].join(',');
+import { useState, FormEvent, ChangeEvent } from 'react';
+import api from '@/lib/api/axios';
+import { ContentItem } from '@/types';
 
 interface UploadFormProps {
   onUploaded?: (content: ContentItem) => void;
@@ -92,7 +75,7 @@ export default function UploadForm({ onUploaded }: UploadFormProps) {
 
       <label>
         File
-        <input type="file" accept={ACCEPTED} onChange={handleFileChange} required />
+        <input type="file" onChange={handleFileChange} required />
       </label>
 
       {message && <div className={`alert alert-${message.type}`}>{message.text}</div>}

@@ -1,8 +1,10 @@
+'use client';
+
 import { useState } from 'react';
-import UploadForm from '../components/UploadForm';
-import ContentList from '../components/ContentList';
-import { useAuth } from '../context/AuthContext';
-import { ContentItem } from '../types';
+import UploadForm from '../UploadForm';
+import ContentList from '../ContentList';
+import { useAuth } from '@/context/AuthContext';
+import { ContentItem } from '@/types';
 
 export default function AdminDashboard() {
   const { user } = useAuth();

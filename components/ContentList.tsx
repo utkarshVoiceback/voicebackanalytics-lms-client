@@ -1,6 +1,8 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import api from '../api/axios';
-import { ContentItem, ContentType } from '../types';
+import api from '@/lib/api/axios';
+import { ContentItem, ContentType } from '@/types';
 
 const TYPE_META: Record<ContentType, { label: string; icon: string }> = {
   ppt: { label: 'PPT', icon: '📊' },
@@ -21,12 +23,23 @@ interface ContentListProps {
   refreshKey?: number;
 }
 
-// canDelete: (item) => boolean  — lets each dashboard decide its own delete permission
 export default function ContentList({ canDelete, refreshKey }: ContentListProps) {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [filter, setFilter] = useState<FilterValue>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  function handleViewFile(contentId: string): void {
+    const token = localStorage.getItem('lms_token');
+    const url = `/api/content/${contentId}/file${token ? `?token=${token}` : ''}`;
+    window.open(url, '_blank');
+  }
+
+  function handleDownloadFile(contentId: string): void {
+    const token = localStorage.getItem('lms_token');
+    const url = `/api/content/${contentId}/file?download=1${token ? `&token=${token}` : ''}`;
+    window.location.href = url;
+  }
 
   async function load(): Promise<void> {
     setLoading(true);
@@ -92,12 +105,12 @@ export default function ContentList({ canDelete, refreshKey }: ContentListProps)
               </div>
             </div>
             <div className="content-item-actions">
-              <a className="btn btn-secondary" href={`/api/content/${item._id}/file`} target="_blank" rel="noreferrer">
+              <button className="btn btn-secondary" onClick={() => handleViewFile(item._id)}>
                 View
-              </a>
-              <a className="btn btn-secondary" href={`/api/content/${item._id}/file?download=1`}>
+              </button>
+              <button className="btn btn-secondary" onClick={() => handleDownloadFile(item._id)}>
                 Download
-              </a>
+              </button>
               {canDelete?.(item) && (
                 <button className="btn btn-danger" onClick={() => handleDelete(item._id)}>
                   Delete

@@ -1,4 +1,6 @@
-import ContentList from '../components/ContentList';
+'use client';
+
+import ContentList from '../ContentList';
 
 export default function LearnerDashboard() {
   return (

@@ -1,6 +1,8 @@
+'use client';
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import api from '../api/axios';
-import { SafeUser } from '../types';
+import api from '@/lib/api/axios';
+import { SafeUser } from '@/types';
 
 interface AuthContextValue {
   user: SafeUser | null;

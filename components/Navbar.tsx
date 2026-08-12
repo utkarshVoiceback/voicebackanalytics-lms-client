@@ -1,6 +1,8 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Role } from '../types';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Role } from '@/types';
 
 const ROLE_LABEL: Record<Role, string> = {
   'super-admin': 'Super Admin',
@@ -10,11 +12,11 @@ const ROLE_LABEL: Record<Role, string> = {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   function handleLogout(): void {
     logout();
-    navigate('/login');
+    router.push('/login');
   }
 
   return (

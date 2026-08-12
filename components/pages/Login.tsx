@@ -1,10 +1,12 @@
+'use client';
+
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -16,9 +18,9 @@ export default function Login() {
     setError(null);
     try {
       const user = await login(email, password);
-      if (user.role === 'super-admin') navigate('/super-admin');
-      else if (user.role === 'admin') navigate('/admin');
-      else navigate('/learner');
+      if (user.role === 'super-admin') router.push('/super-admin');
+      else if (user.role === 'admin') router.push('/admin');
+      else router.push('/learner');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
