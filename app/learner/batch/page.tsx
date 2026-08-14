@@ -180,7 +180,7 @@ export default function MyBatchPage() {
                   </span>
                 </div>
                 <h2 className="text-xl font-bold text-white">{batch.batchTitle}</h2>
-                <p className="text-sm text-slate-400 mt-1">Passenger Services Training Program</p>
+                <p className="text-sm text-slate-400 mt-1">Skilvo Training Program</p>
               </div>
               <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
                 <svg className="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

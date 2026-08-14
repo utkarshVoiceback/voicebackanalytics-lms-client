@@ -51,7 +51,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Sign In</h1>
-            <p className="text-sm text-slate-400 mt-1">Passenger Services Training Platform</p>
+            <p className="text-sm text-slate-400 mt-1">Skilvo Learning Platform</p>
           </div>
 
           {/* Error Alert */}
