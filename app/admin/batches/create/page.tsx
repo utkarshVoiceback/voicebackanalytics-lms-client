@@ -98,7 +98,7 @@ export default function CreateBatchPage() {
             required
             value={batchTitle}
             onChange={(e) => setBatchTitle(e.target.value)}
-            placeholder="e.g. Passenger Services Training 2026–2027"
+            placeholder="e.g. Skilvo Training 2026–2027"
             className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
         </div>

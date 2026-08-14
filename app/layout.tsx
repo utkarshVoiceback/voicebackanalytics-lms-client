@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Passenger Services Training Platform - LMS",
-  description: "Learning Management System for Passenger Services Training",
+  title: "Skilvo - Learning Platform",
+  description: "Learning Management System by Skilvo",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

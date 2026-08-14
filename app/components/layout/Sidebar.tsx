@@ -261,7 +261,7 @@ export default function Sidebar({ role }: SidebarProps) {
               <span className="text-white text-xs font-bold tracking-tight">LMS</span>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-white leading-tight truncate">Passenger Services</p>
+              <p className="text-[11px] font-bold text-white leading-tight truncate">Skilvo</p>
               <p className="text-[10px] text-slate-400 leading-tight truncate">Training Platform</p>
             </div>
           </div>
@@ -379,7 +379,7 @@ export default function Sidebar({ role }: SidebarProps) {
           <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
             <span className="text-white text-[10px] font-bold">LMS</span>
           </div>
-          <span className="text-sm font-semibold text-white">Passenger Services</span>
+          <span className="text-sm font-semibold text-white">Skilvo</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}
