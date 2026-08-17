@@ -15,7 +15,9 @@ export default function CreateBatchPage() {
   const [batchTitle, setBatchTitle] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [enrollmentDate, setEnrollmentDate] = useState("");
+  const [enrollmentStartDate, setEnrollmentStartDate] = useState("");
+  const [enrollmentEndDate, setEnrollmentEndDate] = useState("");
+  const [batchSize, setBatchSize] = useState("50");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +46,9 @@ export default function CreateBatchPage() {
         batchTitle,
         startDate,
         endDate,
-        enrollmentDate,
+        enrollmentStartDate,
+        enrollmentEndDate,
+        batchSize: parseInt(batchSize, 10),
       }),
     });
 
@@ -106,7 +110,7 @@ export default function CreateBatchPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="startDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-              Start Date <span className="text-red-400">*</span>
+             Batch Start Date <span className="text-red-400">*</span>
             </label>
             <input
               id="startDate"
@@ -119,7 +123,7 @@ export default function CreateBatchPage() {
           </div>
           <div>
             <label htmlFor="endDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-              End Date <span className="text-red-400">*</span>
+              Batch End Date <span className="text-red-400">*</span>
             </label>
             <input
               id="endDate"
@@ -132,16 +136,46 @@ export default function CreateBatchPage() {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="enrollmentStartDate" className="block text-sm font-medium text-slate-300 mb-1.5">
+              Enrollment Start Date <span className="text-red-400">*</span>
+            </label>
+            <input
+              id="enrollmentStartDate"
+              type="date"
+              required
+              value={enrollmentStartDate}
+              onChange={(e) => setEnrollmentStartDate(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+          <div>
+            <label htmlFor="enrollmentEndDate" className="block text-sm font-medium text-slate-300 mb-1.5">
+              Enrollment End Date <span className="text-red-400">*</span>
+            </label>
+            <input
+              id="enrollmentEndDate"
+              type="date"
+              required
+              value={enrollmentEndDate}
+              onChange={(e) => setEnrollmentEndDate(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
         <div>
-          <label htmlFor="enrollmentDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-            Enrollment Date <span className="text-red-400">*</span>
+          <label htmlFor="batchSize" className="block text-sm font-medium text-slate-300 mb-1.5">
+            Batch Size (Capacity) <span className="text-red-400">*</span>
           </label>
           <input
-            id="enrollmentDate"
-            type="date"
+            id="batchSize"
+            type="number"
+            min="1"
             required
-            value={enrollmentDate}
-            onChange={(e) => setEnrollmentDate(e.target.value)}
+            value={batchSize}
+            onChange={(e) => setBatchSize(e.target.value)}
             className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
         </div>

@@ -64,21 +64,18 @@ export default function AdminDashboard() {
       {!loading && stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className="text-sm text-slate-400 mb-1">Total Learners</p>
+            <p className="text-sm text-slate-400 mb-1">Total Active Learners</p>
             <p className="text-3xl font-bold text-white">{stats.totalLearners}</p>
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className="text-sm text-slate-400 mb-1">Active Batches</p>
+            <p className="text-sm text-slate-400 mb-1">Total Active Batches</p>
             <p className="text-3xl font-bold text-white">{stats.activeBatches} <span className="text-sm font-normal text-slate-500">/ {stats.totalBatches}</span></p>
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className="text-sm text-slate-400 mb-1">Total Modules</p>
+            <p className="text-sm text-slate-400 mb-1">Total Active Modules</p>
             <p className="text-3xl font-bold text-white">{stats.totalModules}</p>
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className="text-sm text-slate-400 mb-1">Total Enrollments</p>
-            <p className="text-3xl font-bold text-white">{stats.totalEnrollments}</p>
-          </div>
+          
         </div>
       )}
 
