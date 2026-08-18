@@ -3,12 +3,19 @@
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+const API_SERVER_URL = process.env.NEXT_PUBLIC_API_SERVER_URL || "http://localhost:5000";
 
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;
   data?: T;
   errorCode?: string;
+}
+
+export function getImageUrl(path: string): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) return path;
+  return `${API_SERVER_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
 export async function apiFetch<T = any>(

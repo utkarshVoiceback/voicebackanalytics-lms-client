@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getImageUrl } from "@/lib/api";
 
 interface Banner {
   id: string;
@@ -98,7 +98,7 @@ export default function HeroSlider() {
         {currentBanner.imageUrl ? (
           <div className="relative w-full h-full">
             <Image
-              src={currentBanner.imageUrl}
+              src={getImageUrl(currentBanner.imageUrl)}
               alt={currentBanner.title || "Banner"}
               fill
               className="object-cover"

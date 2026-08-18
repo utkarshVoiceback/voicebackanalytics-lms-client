@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAppSelector } from "@/store";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getImageUrl } from "@/lib/api";
 
 interface Banner {
   id: string;
@@ -373,7 +373,7 @@ export default function EditBannerPage() {
                 <p className="text-sm font-medium text-slate-300 mb-2">Current/Preview Image</p>
                 <div className="relative w-full aspect-video bg-slate-800 rounded-lg overflow-hidden border border-slate-700 mb-4">
                   <Image
-                    src={previewUrl}
+                    src={getImageUrl(previewUrl)}
                     alt="Banner"
                     fill
                     className="object-cover"

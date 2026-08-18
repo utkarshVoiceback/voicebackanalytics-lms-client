@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAppSelector } from "@/store";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getImageUrl } from "@/lib/api";
 
 interface Banner {
   id: string;
@@ -158,7 +158,7 @@ export default function BannersPage() {
                       {banner.imageUrl ? (
                         <div className="relative w-20 h-12 rounded bg-slate-800 overflow-hidden">
                           <Image
-                            src={banner.imageUrl}
+                            src={getImageUrl(banner.imageUrl)}
                             alt={banner.title || "Banner"}
                             fill
                             className="object-cover"
