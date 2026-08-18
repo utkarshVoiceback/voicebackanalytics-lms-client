@@ -29,7 +29,12 @@ export default function AdminModulesPage() {
     if (res.success && res.data) {
       dispatch(setBatches(res.data));
       if (res.data.length > 0 && !selectedBatchId) {
-        setSelectedBatchId(res.data[0].id);
+        const saved = localStorage.getItem("lastSelectedBatchId");
+        if (saved && res.data.some((batch) => batch.id === saved)) {
+          setSelectedBatchId(saved);
+        } else {
+          setSelectedBatchId(res.data[0].id);
+        }
       }
     }
   };
@@ -74,7 +79,10 @@ export default function AdminModulesPage() {
           <label className="block text-sm font-medium text-slate-300 mb-2">Select Batch</label>
           <select
             value={selectedBatchId}
-            onChange={(e) => setSelectedBatchId(e.target.value)}
+            onChange={(e) => {
+              localStorage.setItem("lastSelectedBatchId", e.target.value);
+              setSelectedBatchId(e.target.value);
+            }}
             className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           >
             <option value="">-- Select a Batch --</option>

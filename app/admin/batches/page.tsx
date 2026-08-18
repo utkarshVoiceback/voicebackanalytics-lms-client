@@ -15,6 +15,7 @@ export default function BatchListPage() {
   const { batches, loading, error } = useAppSelector((state) => state.batch);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [lastSelectedBatchId, setLastSelectedBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -23,6 +24,14 @@ export default function BatchListPage() {
       router.push("/");
     }
   }, [isAuthenticated, user, router]);
+
+  useEffect(() => {
+    // Load last selected batch ID from localStorage
+    const saved = localStorage.getItem("lastSelectedBatchId");
+    if (saved) {
+      setLastSelectedBatchId(saved);
+    }
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === "ADMIN") {
@@ -48,6 +57,11 @@ export default function BatchListPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchBatches();
+  };
+
+  const handleSelectBatch = (batchId: string) => {
+    localStorage.setItem("lastSelectedBatchId", batchId);
+    setLastSelectedBatchId(batchId);
   };
 
   if (!isAuthenticated || !user || user.role !== "ADMIN") {
@@ -156,7 +170,14 @@ export default function BatchListPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {batches.map((batch: Batch) => (
-                  <tr key={batch.id} className="hover:bg-slate-800/50 transition-colors">
+                  <tr
+                    key={batch.id}
+                    className={`transition-colors ${
+                      lastSelectedBatchId === batch.id
+                        ? "bg-blue-900/30 hover:bg-blue-900/40"
+                        : "hover:bg-slate-800/50"
+                    }`}
+                  >
                     <td className="px-6 py-4 font-medium text-white">{batch.batchTitle}</td>
                     <td className="px-6 py-4 text-slate-300">
                       {new Date(batch.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – {new Date(batch.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
@@ -191,6 +212,7 @@ export default function BatchListPage() {
                     <td className="px-6 py-4 text-right">
                       <Link
                         href={`/admin/batches/${batch.id}`}
+                        onClick={() => handleSelectBatch(batch.id)}
                         className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
                       >
                         View / Edit
