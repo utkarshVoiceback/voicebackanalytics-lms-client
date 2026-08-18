@@ -68,7 +68,7 @@ function AdminChatContent() {
   const [selectedNewLearner, setSelectedNewLearner] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || "";
+    const token = localStorage.getItem("lms_auth_token") || "";
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         setUserId(payload.id || payload.userId);
@@ -80,8 +80,11 @@ function AdminChatContent() {
     
     socket.on("message:new", (msg: Message) => {
       setMessages((prev) => {
-        if (prev.length > 0 && prev[0].conversationId === msg.conversationId) {
-           return [...prev, msg];
+        if (selectedConvRef.current?.id === msg.conversationId) {
+           // Prevent duplicate messages
+           if (!prev.some(m => m.id === msg.id)) {
+               return [...prev, msg];
+           }
         }
         return prev;
       });
@@ -102,6 +105,12 @@ function AdminChatContent() {
            return c;
         });
       });
+    });
+
+    socket.on("connect", () => {
+      if (selectedConvRef.current) {
+        socketService.joinConversation(selectedConvRef.current.id);
+      }
     });
 
     return () => {
@@ -189,13 +198,13 @@ function AdminChatContent() {
 
   const startNewConversation = async (learnerId: string, batchId?: string) => {
       try {
-          const res = await apiFetch("/conversations", {
+          const res: any = await apiFetch("/conversations", {
               method: "POST",
               body: JSON.stringify({ learnerId, batchId })
           });
           if (res.id) {
               // Reload conversations and select the new one
-              const updatedConvs = await apiFetch("/conversations");
+              const updatedConvs: any = await apiFetch("/conversations");
               if (updatedConvs.success || Array.isArray(updatedConvs)) {
                   const arr = Array.isArray(updatedConvs) ? updatedConvs : updatedConvs.data;
                   setConversations(arr);
@@ -213,12 +222,21 @@ function AdminChatContent() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const res = await apiFetch(`/conversations/${selectedConversation.id}/messages`, {
+      const res: any = await apiFetch(`/conversations/${selectedConversation.id}/messages`, {
         method: "POST",
         body: JSON.stringify({ message: newMessage }),
       });
       if (res.success || res.id) {
         setNewMessage("");
+        const sentMsg = res.data || res;
+        if (sentMsg && sentMsg.id) {
+           setMessages(prev => {
+              if (!prev.some(m => m.id === sentMsg.id)) {
+                  return [...prev, sentMsg];
+              }
+              return prev;
+           });
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -242,6 +260,7 @@ function AdminChatContent() {
 
       <div className="flex flex-1 gap-6 min-h-0 overflow-hidden">
         {/* Conversation List */}
+        {!learnerIdParam && (
         <div className="w-1/3 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden">
           <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
             <h2 className="font-semibold text-white">Conversations</h2>
@@ -282,7 +301,7 @@ function AdminChatContent() {
                 ))
             )}
           </div>
-        </div>
+        </div>)}
 
         {/* Chat Window */}
         <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
