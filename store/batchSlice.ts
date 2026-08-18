@@ -5,7 +5,12 @@ export interface Batch {
   batchTitle: string;
   startDate: string;
   endDate: string;
-  enrollmentDate: string;
+  enrollmentDate?: string;
+  enrollmentStartDate: string;
+  enrollmentEndDate: string;
+  batchSize: number;
+  enrolledCount?: number;
+  dynamicStatus?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
