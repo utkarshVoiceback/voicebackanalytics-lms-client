@@ -14,9 +14,10 @@ interface Batch {
 interface FormField {
   key: string;
   label: string;
-  type: "text" | "number" | "date" | "email";
+  type: "text" | "number" | "date" | "email" | "file" | "select" | "radio";
   required: boolean;
   isStandard: boolean;
+  options?: string[];
 }
 
 const STANDARD_FIELDS: FormField[] = [
@@ -79,11 +80,29 @@ export default function CreateFormPage() {
   const updateCustomField = (index: number, field: Partial<FormField>) => {
     const updated = [...customFields];
     updated[index] = { ...updated[index], ...field };
+    // If type changes away from select/radio, clear options
+    if (field.type && field.type !== "select" && field.type !== "radio") {
+      updated[index].options = undefined;
+    }
     setCustomFields(updated);
   };
 
   const removeCustomField = (index: number) => {
     setCustomFields(customFields.filter((_, i) => i !== index));
+  };
+
+  const moveFieldUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...customFields];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    setCustomFields(updated);
+  };
+
+  const moveFieldDown = (index: number) => {
+    if (index === customFields.length - 1) return;
+    const updated = [...customFields];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    setCustomFields(updated);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,6 +123,10 @@ export default function CreateFormPage() {
     for (const field of customFields) {
       if (!field.label.trim()) {
         setError("All custom fields must have a label");
+        return;
+      }
+      if ((field.type === "select" || field.type === "radio") && (!field.options || field.options.length === 0)) {
+        setError(`Field "${field.label}" requires at least one option`);
         return;
       }
     }
@@ -290,7 +313,7 @@ export default function CreateFormPage() {
             </div>
 
             {customFields.length === 0 ? (
-              <p className="text-slate-400 text-sm">No custom fields added yet. Click "Add Field" to add one.</p>
+              <p className="text-slate-400 text-sm">No custom fields added yet. Click &quot;Add Field&quot; to add one.</p>
             ) : (
               <div className="space-y-4">
                 {customFields.map((field, index) => (
@@ -312,8 +335,31 @@ export default function CreateFormPage() {
                         <option value="email">Email</option>
                         <option value="number">Number</option>
                         <option value="date">Date</option>
+                        <option value="file">File Upload</option>
+                        <option value="select">Dropdown (Select)</option>
+                        <option value="radio">Radio Buttons</option>
                       </select>
                     </div>
+
+                    {/* Options input for select/radio */}
+                    {(field.type === "select" || field.type === "radio") && (
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">
+                          Options (comma-separated) <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={(field.options || []).join(", ")}
+                          onChange={(e) =>
+                            updateCustomField(index, {
+                              options: e.target.value.split(",").map((o) => o.trim()).filter(Boolean),
+                            })
+                          }
+                          placeholder="e.g., Option A, Option B, Option C"
+                          className="w-full rounded border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2 text-slate-300">
@@ -325,10 +371,33 @@ export default function CreateFormPage() {
                         />
                         <span className="text-sm">Required</span>
                       </label>
+
+                      {/* Reorder buttons */}
+                      <div className="flex items-center gap-1 ml-auto">
+                        <button
+                          type="button"
+                          onClick={() => moveFieldUp(index)}
+                          disabled={index === 0}
+                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveFieldDown(index)}
+                          disabled={index === customFields.length - 1}
+                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => removeCustomField(index)}
-                        className="ml-auto text-red-400 hover:text-red-300 text-sm font-medium"
+                        className="text-red-400 hover:text-red-300 text-sm font-medium"
                       >
                         Remove
                       </button>

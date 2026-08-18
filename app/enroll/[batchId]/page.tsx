@@ -4,19 +4,50 @@ import { useEffect, useState, use, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
+interface FormField {
+  key: string;
+  label: string;
+  type: "text" | "number" | "date" | "email" | "file" | "select" | "radio";
+  required: boolean;
+  isStandard: boolean;
+  options?: string[];
+}
+
+interface FormTemplateData {
+  id: string;
+  name: string;
+  fields: FormField[];
+}
+
+interface BatchDetails {
+  id: string;
+  batchTitle: string;
+  startDate: string;
+  endDate: string;
+  enrollmentStartDate: string;
+  enrollmentEndDate: string;
+  status: string;
+  formTemplate: FormTemplateData | null;
+}
+
 export default function EnrollmentPage({ params }: { params: Promise<{ batchId: string }> }) {
   const router = useRouter();
   const { batchId } = use(params);
 
   const [batchLoading, setBatchLoading] = useState(true);
   const [batchError, setBatchError] = useState<string | null>(null);
-  const [batch, setBatch] = useState<any>(null);
+  const [batch, setBatch] = useState<BatchDetails | null>(null);
 
+  // Standard account-creation fields (always present)
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Dynamic fields state
+  const [dynamicValues, setDynamicValues] = useState<Record<string, any>>({});
+  const [dynamicFiles, setDynamicFiles] = useState<Record<string, File | null>>({});
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -31,13 +62,61 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
   const fetchBatchDetails = async () => {
     setBatchLoading(true);
     setBatchError(null);
-    const res = await apiFetch(`/public-enrollments/batch/${batchId}`);
+    const res = await apiFetch<BatchDetails>(`/public-enrollments/batch/${batchId}`);
     if (res.success && res.data) {
       setBatch(res.data);
     } else {
       setBatchError("This enrollment link is invalid or no longer available.");
     }
     setBatchLoading(false);
+  };
+
+  const updateDynamicValue = (key: string, value: any) => {
+    setDynamicValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateDynamicFile = (key: string, file: File | null) => {
+    setDynamicFiles((prev) => ({ ...prev, [key]: file }));
+  };
+
+  // Client-side validation of dynamic fields
+  const validateDynamic = (): string | null => {
+    if (!batch?.formTemplate) return null;
+    const customFields = batch.formTemplate.fields.filter((f) => !f.isStandard);
+
+    for (const field of customFields) {
+      const value = dynamicValues[field.key];
+      const file = dynamicFiles[field.key];
+
+      if (field.type === "file") {
+        if (field.required && !file) {
+          return `"${field.label}" is required`;
+        }
+        continue;
+      }
+
+      if (field.required && (value === undefined || value === null || value === "")) {
+        return `"${field.label}" is required`;
+      }
+
+      if (value !== undefined && value !== null && value !== "") {
+        if (field.type === "number" && isNaN(Number(value))) {
+          return `"${field.label}" must be a valid number`;
+        }
+        if (field.type === "email") {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            return `"${field.label}" must be a valid email`;
+          }
+        }
+        if ((field.type === "select" || field.type === "radio") && field.options) {
+          if (!field.options.includes(value)) {
+            return `Invalid value for "${field.label}"`;
+          }
+        }
+      }
+    }
+    return null;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -49,11 +128,62 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       return;
     }
 
+    // Validate dynamic fields
+    const dynamicError = validateDynamic();
+    if (dynamicError) {
+      setSubmitError(dynamicError);
+      return;
+    }
+
     setSubmitting(true);
-    const res = await apiFetch(`/public-enrollments/batch/${batchId}`, {
-      method: "POST",
-      body: JSON.stringify({ fullName, email, mobileNumber, password }),
-    });
+
+    // Determine if we have file uploads
+    const hasFiles = Object.values(dynamicFiles).some((f) => f !== null);
+
+    let res;
+
+    if (hasFiles) {
+      // Use FormData for multipart upload
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("mobileNumber", mobileNumber);
+      formData.append("password", password);
+
+      // Add dynamic text values
+      for (const [key, value] of Object.entries(dynamicValues)) {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, String(value));
+        }
+      }
+
+      // Add dynamic files
+      for (const [key, file] of Object.entries(dynamicFiles)) {
+        if (file) {
+          formData.append(key, file);
+        }
+      }
+
+      res = await apiFetch(`/public-enrollments/batch/${batchId}`, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      // Standard JSON submission
+      const body: Record<string, any> = { fullName, email, mobileNumber, password };
+
+      // Add dynamic values
+      for (const [key, value] of Object.entries(dynamicValues)) {
+        if (value !== undefined && value !== null && value !== "") {
+          body[key] = value;
+        }
+      }
+
+      res = await apiFetch(`/public-enrollments/batch/${batchId}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+    }
 
     if (res.success && res.data) {
       setSuccess(true);
@@ -61,6 +191,99 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       setSubmitError(res.message || "Unable to submit your enrollment. Please try again.");
     }
     setSubmitting(false);
+  };
+
+  // Render a single dynamic field based on its type
+  const renderDynamicField = (field: FormField) => {
+    const inputClasses =
+      "w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors";
+
+    switch (field.type) {
+      case "text":
+      case "email":
+      case "number":
+      case "date":
+        return (
+          <input
+            type={field.type}
+            value={dynamicValues[field.key] || ""}
+            onChange={(e) => updateDynamicValue(field.key, e.target.value)}
+            required={field.required}
+            className={inputClasses}
+            placeholder={field.label}
+          />
+        );
+
+      case "select":
+        return (
+          <select
+            value={dynamicValues[field.key] || ""}
+            onChange={(e) => updateDynamicValue(field.key, e.target.value)}
+            required={field.required}
+            className={inputClasses}
+          >
+            <option value="">-- Select --</option>
+            {(field.options || []).map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        );
+
+      case "radio":
+        return (
+          <div className="flex flex-wrap gap-4 py-2">
+            {(field.options || []).map((opt) => (
+              <label key={opt} className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name={field.key}
+                  value={opt}
+                  checked={dynamicValues[field.key] === opt}
+                  onChange={(e) => updateDynamicValue(field.key, e.target.value)}
+                  required={field.required && !dynamicValues[field.key]}
+                  className="accent-blue-500"
+                />
+                <span className="text-sm">{opt}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      case "file":
+        return (
+          <div>
+            <input
+              type="file"
+              onChange={(e) => updateDynamicFile(field.key, e.target.files?.[0] || null)}
+              required={field.required}
+              accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx"
+              className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer file:transition-colors"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Allowed: JPG, PNG, WEBP, PDF, DOC (max 5MB)
+            </p>
+            {dynamicFiles[field.key] && (
+              <p className="text-xs text-emerald-400 mt-1">
+                Selected: {dynamicFiles[field.key]!.name}
+              </p>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <input
+            type="text"
+            value={dynamicValues[field.key] || ""}
+            onChange={(e) => updateDynamicValue(field.key, e.target.value)}
+            required={field.required}
+            className={inputClasses}
+            placeholder={field.label}
+          />
+        );
+    }
   };
 
   if (batchLoading) {
@@ -104,14 +327,14 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
             Thank you for registering. You have successfully submitted your enrollment for:
           </p>
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8 text-left space-y-3">
-            <h2 className="text-xl font-bold text-white mb-2">{batch.batchTitle}</h2>
+            <h2 className="text-xl font-bold text-white mb-2">{batch?.batchTitle}</h2>
             <div className="flex justify-between items-center text-sm border-b border-slate-700/50 pb-2">
               <span className="text-slate-400">Start Date</span>
-              <span className="font-medium text-white">{batch.startDate ? new Date(batch.startDate).toLocaleDateString() : 'N/A'}</span>
+              <span className="font-medium text-white">{batch?.startDate ? new Date(batch.startDate).toLocaleDateString() : 'N/A'}</span>
             </div>
             <div className="flex justify-between items-center text-sm border-b border-slate-700/50 pb-2">
               <span className="text-slate-400">End Date</span>
-              <span className="font-medium text-white">{batch.endDate ? new Date(batch.endDate).toLocaleDateString() : 'N/A'}</span>
+              <span className="font-medium text-white">{batch?.endDate ? new Date(batch.endDate).toLocaleDateString() : 'N/A'}</span>
             </div>
           </div>
           <button onClick={() => router.push("/login")} className="w-full rounded-xl bg-blue-600 px-6 py-3.5 font-bold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20">
@@ -121,6 +344,15 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       </div>
     );
   }
+
+  // Get fields from FormTemplate, or use standard hardcoded fields if no template
+  const formTemplate = batch?.formTemplate;
+  const standardFields = formTemplate
+    ? formTemplate.fields.filter((f) => f.isStandard)
+    : null;
+  const customFields = formTemplate
+    ? formTemplate.fields.filter((f) => !f.isStandard)
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6">
@@ -173,6 +405,7 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
           </div>
 
           <form onSubmit={handleSubmit} className="p-8">
+            {/* Standard Account Fields - always present */}
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-6">Personal Information</h2>
             <div className="space-y-6">
               <div>
@@ -254,6 +487,28 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
                 </div>
               </div>
             </div>
+
+            {/* Dynamic Custom Fields from FormTemplate */}
+            {customFields.length > 0 && (
+              <>
+                <div className="mt-10 mb-6 border-t border-slate-800 pt-6">
+                  <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                    Additional Information
+                  </h2>
+                </div>
+                <div className="space-y-6">
+                  {customFields.map((field) => (
+                    <div key={field.key}>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        {field.label}{" "}
+                        {field.required && <span className="text-red-400">*</span>}
+                      </label>
+                      {renderDynamicField(field)}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             <div className="mt-10 pt-6 border-t border-slate-800">
               <button

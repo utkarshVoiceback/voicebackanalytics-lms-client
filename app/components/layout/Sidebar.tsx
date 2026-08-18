@@ -143,17 +143,17 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
       title: "ENROLLMENT / MANAGEMENT",
       items: [
         { href: "/admin/batches", label: "Batches", icon: icons.batches },
-        { href: "/admin/learners", label: "Active Learners", icon: icons.learners },
+        { href: "/admin/learners", label: "Learners", icon: icons.learners },
         { href: "/admin/modules", label: "Modules", icon: icons.modules },
-        { href: "/admin/assessments", label: "Assessments", icon: icons.assessments },
+        { href: "/admin/assessments", label: "Assessment", icon: icons.assessments },
       ],
     },
-    {
-      title: "MONITORING",
-      items: [
-        { href: "/admin/progress", label: "Learner Progress", icon: icons.progress },
-      ],
-    },
+    // {
+    //   title: "MONITORING",
+    //   items: [
+    //     { href: "/admin/progress", label: "Learner Progress", icon: icons.progress },
+    //   ],
+    // },
     {
       title: "COMMUNICATION",
       items: [
@@ -178,13 +178,13 @@ const learnerNav: { main: NavItem[]; sections: NavSection[] } = {
         { href: "/learner/assessments", label: "Assessment", icon: icons.assessments },
       ],
     },
-    {
-      title: "My Progress",
-      items: [
-        // { href: "/learner/progress", label: "My Progress", icon: icons.progress },
-        { href: "/learner/results", label: "Results", icon: icons.results },
-      ],
-    },
+    // {
+    //   title: "My Progress",
+    //   items: [
+    //     // { href: "/learner/progress", label: "My Progress", icon: icons.progress },
+    //     { href: "/learner/results", label: "Results", icon: icons.results },
+    //   ],
+    // },
     {
       title: "Communication",
       items: [

@@ -63,7 +63,7 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
       const endStr = activeBatch.endDate ? new Date(activeBatch.endDate).toISOString().split('T')[0] : "";
       setEndDate(endStr);
       // Format date to YYYY-MM-DD for input[type="date"]
-      const dateStr = new Date(activeBatch.enrollmentDate).toISOString().split('T')[0];
+      const dateStr = activeBatch.enrollmentDate ? new Date(activeBatch.enrollmentDate).toISOString().split('T')[0] : "";
       setEnrollmentDate(dateStr);
       setStatus(activeBatch.status);
     }

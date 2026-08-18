@@ -93,6 +93,19 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
     setActionLoading(false);
   };
 
+  const handleCompleteModule = async () => {
+    setActionLoading(true);
+    setError(null);
+    const res = await apiFetch(`/modules/${id}/complete`, { method: "POST" });
+    if (res.success) {
+      setProgress(res.data);
+      setSuccessMessage("Module completed successfully!");
+    } else {
+      setError(res.message || "Failed to mark module as completed");
+    }
+    setActionLoading(false);
+  };
+
   const renderContent = (content: Content, index: number) => {
     // Helper to get the full URL if it's a local upload
     const getFullUrl = (url: string) => {
@@ -195,6 +208,7 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
   const isNotStarted = !progress || progress.status === "NOT_STARTED";
   const isInProgress = progress?.status === "IN_PROGRESS" || progress?.status === "CONTENT_COMPLETED";
   const isMCQAvailable = progress?.status === "MCQ_AVAILABLE";
+  const isMCQCompleted = progress?.status === "MCQ_COMPLETED";
   const isCompleted = progress?.status === "COMPLETED";
 
   if (loading) {
@@ -243,6 +257,11 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
                 Completed
+              </span>
+            )}
+            {isMCQCompleted && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-medium text-emerald-400">
+                MCQ Passed
               </span>
             )}
             {isMCQAvailable && (
@@ -303,9 +322,11 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
         )}
 
         {/* Completed Score Card */}
-        {isCompleted && progress?.obtainedMarks !== null && (
+        {(isCompleted || isMCQCompleted) && progress?.obtainedMarks !== null && (
           <div className="mb-8 bg-emerald-950/30 border border-emerald-800/40 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-emerald-400 mb-3">Module Completed ✓</h3>
+            <h3 className="text-lg font-semibold text-emerald-400 mb-3">
+              {isCompleted ? "Module Completed ✓" : "MCQ Passed ✓"}
+            </h3>
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">{progress.obtainedMarks}/{progress.totalMarks}</p>
@@ -343,7 +364,7 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
         )}
 
         {/* Module Content */}
-        {(isInProgress || isMCQAvailable || isCompleted) && module?.contents && (
+        {(isInProgress || isMCQAvailable || isMCQCompleted || isCompleted) && module?.contents && (
           <div className="mb-8">
             {module.contents.map((content, index) => renderContent(content, index))}
           </div>
@@ -382,6 +403,28 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
               </svg>
               Take MCQ Assessment
+            </button>
+          </div>
+        )}
+
+        {isMCQCompleted && (
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={handleCompleteModule}
+              disabled={actionLoading}
+              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 text-base font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-lg shadow-emerald-500/20"
+            >
+              {actionLoading ? (
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+              )}
+              Mark Module as Completed
             </button>
           </div>
         )}

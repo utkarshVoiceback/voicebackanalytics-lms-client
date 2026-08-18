@@ -25,6 +25,7 @@ interface QuizResult {
   totalMarks: number;
   percentage: number;
   status: string;
+  passed: boolean;
 }
 
 export default function LearnerQuizPage({ params }: { params: Promise<{ id: string }> }) {
@@ -41,6 +42,7 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
 
   const [showWarning, setShowWarning] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     if (id) fetchQuiz();
@@ -93,6 +95,18 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
     setSubmitting(false);
   };
 
+  const handleCompleteModule = async () => {
+    setCompleting(true);
+    const res = await apiFetch(`/modules/${id}/complete`, { method: "POST" });
+    setCompleting(false);
+
+    if (res.success) {
+      router.push(`/learner/modules/${id}`);
+    } else {
+      setError(res.message || "Failed to mark module as completed");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-950">
@@ -130,13 +144,21 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Quiz Completed!</h1>
-            <p className="text-slate-400 mb-8">You have successfully completed this module's assessment.</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {result.passed ? "Quiz Passed!" : "Assessment Failed"}
+            </h1>
+            <p className="text-slate-400 mb-8">
+              {result.passed
+                ? "You have successfully completed this module's assessment."
+                : "You must answer all questions correctly to complete the module."}
+            </p>
             
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
                 <p className="text-sm font-medium text-slate-400 mb-1">Score</p>
-                <p className="text-4xl font-bold text-emerald-400">{result.percentage}%</p>
+                <p className={`text-4xl font-bold ${result.passed ? "text-emerald-400" : "text-amber-400"}`}>
+                  {result.percentage}%
+                </p>
                 <p className="text-sm text-slate-500 mt-2">{result.obtainedMarks} / {result.totalMarks} Marks</p>
               </div>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-left space-y-3">
@@ -159,8 +181,28 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
               <p className="text-blue-300 font-medium">Module Status: {result.status}</p>
             </div>
 
-            <button onClick={() => router.push("/learner/modules")} className="w-full rounded-xl bg-blue-600 px-6 py-4 font-bold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20">
-              Return to My Modules
+            {result.passed ? (
+              <button 
+                onClick={handleCompleteModule} 
+                disabled={completing}
+                className="w-full rounded-xl bg-emerald-600 px-6 py-4 font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-lg shadow-emerald-500/20 mb-4"
+              >
+                {completing ? "Completing..." : "Mark Module as Completed"}
+              </button>
+            ) : (
+              <button 
+                onClick={() => {
+                  setResult(null);
+                  setSelections({});
+                }} 
+                className="w-full rounded-xl bg-amber-600 px-6 py-4 font-bold text-white hover:bg-amber-500 transition-colors shadow-lg shadow-amber-500/20 mb-4"
+              >
+                Retry Assessment
+              </button>
+            )}
+            
+            <button onClick={() => router.push(`/learner/modules/${id}`)} className="w-full rounded-xl bg-slate-800 px-6 py-4 font-bold text-white hover:bg-slate-700 transition-colors">
+              Return to Module
             </button>
           </div>
         </div>
