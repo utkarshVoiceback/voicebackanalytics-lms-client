@@ -108,7 +108,7 @@ const icons = {
   ),
 };
 
-export type SidebarRole = "ADMIN" | "LEARNER";
+export type SidebarRole = "ADMIN" | "LEARNER" | "INSTRUCTOR";
 
 interface NavItem {
   href: string;
@@ -131,8 +131,8 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
     {
       title: "ENROLLMENT / MANAGEMENT",
       items: [
-        { href: "/admin/enrollment-forms", label: "Enrollment Forms", icon: icons.enrollment },
-        { href: "/admin/learners", label: "Learners", icon: icons.learners },
+        { href: "/admin/batches", label: "Batches", icon: icons.batches },
+        { href: "/admin/learners", label: "Active Learners", icon: icons.learners },
         { href: "/admin/modules", label: "Modules", icon: icons.modules },
         { href: "/admin/assessments", label: "Assessments", icon: icons.assessments },
       ],
@@ -156,21 +156,21 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
 // ─── Learner nav ──────────────────────────────────────────────────────────────
 const learnerNav: { main: NavItem[]; sections: NavSection[] } = {
   main: [
-    { href: "/learner/dashboard", label: "Dashboard", icon: icons.dashboard, exact: true },
+    { href: "/learner/dashboard", label: "Home", icon: icons.dashboard, exact: true },
   ],
   sections: [
     {
       title: "My Training",
       items: [
-        { href: "/learner/batch", label: "My Batch", icon: icons.batch },
+        // { href: "/learner/batch", label: "My Batch", icon: icons.batch },
         { href: "/learner/modules", label: "My Modules", icon: icons.modules },
-        { href: "/learner/assessments", label: "Assessments", icon: icons.assessments },
+        { href: "/learner/assessments", label: "Assessment", icon: icons.assessments },
       ],
     },
     {
       title: "My Progress",
       items: [
-        { href: "/learner/progress", label: "My Progress", icon: icons.progress },
+        // { href: "/learner/progress", label: "My Progress", icon: icons.progress },
         { href: "/learner/results", label: "Results", icon: icons.results },
       ],
     },
@@ -228,7 +228,7 @@ export default function Sidebar({ role }: SidebarProps) {
     router.push("/login");
   };
 
-  const nav = role === "ADMIN" ? adminNav : learnerNav;
+  const nav = (role === "ADMIN" || role === "INSTRUCTOR") ? adminNav : learnerNav;
 
   // Initials for avatar
   const initials = user?.fullName
@@ -240,7 +240,7 @@ export default function Sidebar({ role }: SidebarProps) {
         .toUpperCase()
     : "?";
 
-  const roleLabel = role === "ADMIN" ? "Administrator" : "Learner";
+  const roleLabel = role === "ADMIN" ? "Administrator" : role === "INSTRUCTOR" ? "Instructor" : "Learner";
 
   // ─── Sidebar Content ────────────────────────────────────────────────────────
   const sidebarContent = (isMobile = false) => (
