@@ -106,6 +106,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
   ),
+  banner: (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor" className="w-full h-full">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+    </svg>
+  ),
 };
 
 export type SidebarRole = "ADMIN" | "LEARNER" | "INSTRUCTOR";
@@ -129,10 +134,16 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
   ],
   sections: [
     {
+      title: "HOME PAGE",
+      items: [
+        { href: "/admin/home-page/banners", label: "Banners", icon: icons.banner },
+      ],
+    },
+    {
       title: "ENROLLMENT / MANAGEMENT",
       items: [
-        { href: "/admin/enrollment-forms", label: "Enrollment Forms", icon: icons.enrollment },
-        { href: "/admin/learners", label: "Learners", icon: icons.learners },
+        { href: "/admin/batches", label: "Batches", icon: icons.batches },
+        { href: "/admin/learners", label: "Active Learners", icon: icons.learners },
         { href: "/admin/modules", label: "Modules", icon: icons.modules },
         { href: "/admin/assessments", label: "Assessments", icon: icons.assessments },
       ],
@@ -156,21 +167,21 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
 // ─── Learner nav ──────────────────────────────────────────────────────────────
 const learnerNav: { main: NavItem[]; sections: NavSection[] } = {
   main: [
-    { href: "/learner/dashboard", label: "Dashboard", icon: icons.dashboard, exact: true },
+    { href: "/learner/dashboard", label: "Home", icon: icons.dashboard, exact: true },
   ],
   sections: [
     {
       title: "My Training",
       items: [
-        { href: "/learner/batch", label: "My Batch", icon: icons.batch },
+        // { href: "/learner/batch", label: "My Batch", icon: icons.batch },
         { href: "/learner/modules", label: "My Modules", icon: icons.modules },
-        { href: "/learner/assessments", label: "Assessments", icon: icons.assessments },
+        { href: "/learner/assessments", label: "Assessment", icon: icons.assessments },
       ],
     },
     {
       title: "My Progress",
       items: [
-        { href: "/learner/progress", label: "My Progress", icon: icons.progress },
+        // { href: "/learner/progress", label: "My Progress", icon: icons.progress },
         { href: "/learner/results", label: "Results", icon: icons.results },
       ],
     },

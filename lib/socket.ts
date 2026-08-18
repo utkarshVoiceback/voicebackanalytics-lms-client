@@ -14,7 +14,7 @@ class SocketService {
 
   public connect(): Socket {
     if (!this.socket) {
-      const token = this.getCookie("lms_auth_token") || (typeof localStorage !== "undefined" ? localStorage.getItem("lms_auth_token") : null);
+      const token = this.getCookie("token") || (typeof localStorage !== "undefined" ? localStorage.getItem("token") : null);
 
       this.socket = io(this.backendUrl.replace("/api/v1", ""), {
         auth: {
