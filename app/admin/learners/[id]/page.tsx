@@ -58,13 +58,13 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
+    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
       router.push("/");
     }
   }, [isAuthenticated, user, router]);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN" && id) {
+    if (isAuthenticated && (user?.role === "ADMIN" || user?.role === "INSTRUCTOR") && id) {
       fetchLearnerDetails();
     }
   }, [isAuthenticated, user, id]);
@@ -100,7 +100,7 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
     return Math.round((completed / assessments.length) * 100);
   };
 
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
+  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
@@ -142,15 +142,26 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
             <h1 className="text-3xl font-bold text-white tracking-tight">{learner.user.fullName}</h1>
             <p className="text-slate-400 mt-1">{learner.user.email} {learner.user.mobile ? `• ${learner.user.mobile}` : ''}</p>
           </div>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-            learner.status === "ACTIVE"
-              ? "bg-emerald-500/20 text-emerald-400"
-              : learner.status === "COMPLETED"
-              ? "bg-blue-500/20 text-blue-400"
-              : "bg-slate-600/20 text-slate-400"
-          }`}>
-            {learner.status}
-          </span>
+          <div className="flex items-center gap-4">
+            <Link 
+              href={`/admin/feedback?learnerId=${learner.userId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+              </svg>
+              Chat
+            </Link>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+              learner.status === "ACTIVE"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : learner.status === "COMPLETED"
+                ? "bg-blue-500/20 text-blue-400"
+                : "bg-slate-600/20 text-slate-400"
+            }`}>
+              {learner.status}
+            </span>
+          </div>
         </div>
       </div>
 

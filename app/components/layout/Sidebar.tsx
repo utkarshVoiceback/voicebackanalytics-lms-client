@@ -108,7 +108,7 @@ const icons = {
   ),
 };
 
-export type SidebarRole = "ADMIN" | "LEARNER";
+export type SidebarRole = "ADMIN" | "LEARNER" | "INSTRUCTOR";
 
 interface NavItem {
   href: string;
@@ -228,7 +228,7 @@ export default function Sidebar({ role }: SidebarProps) {
     router.push("/login");
   };
 
-  const nav = role === "ADMIN" ? adminNav : learnerNav;
+  const nav = (role === "ADMIN" || role === "INSTRUCTOR") ? adminNav : learnerNav;
 
   // Initials for avatar
   const initials = user?.fullName
@@ -240,7 +240,7 @@ export default function Sidebar({ role }: SidebarProps) {
         .toUpperCase()
     : "?";
 
-  const roleLabel = role === "ADMIN" ? "Administrator" : "Learner";
+  const roleLabel = role === "ADMIN" ? "Administrator" : role === "INSTRUCTOR" ? "Instructor" : "Learner";
 
   // ─── Sidebar Content ────────────────────────────────────────────────────────
   const sidebarContent = (isMobile = false) => (

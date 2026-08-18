@@ -137,7 +137,8 @@ export default function BatchListPage() {
                 <tr className="border-b border-slate-800 text-slate-400 uppercase text-xs tracking-wider">
                   <th className="px-6 py-4 font-medium">Batch Title</th>
                   <th className="px-6 py-4 font-medium">Period</th>
-                  <th className="px-6 py-4 font-medium">Enrollment Date</th>
+                  <th className="px-6 py-4 font-medium">Enrollment Period</th>
+                  <th className="px-6 py-4 font-medium">Capacity</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
@@ -150,17 +151,30 @@ export default function BatchListPage() {
                       {new Date(batch.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – {new Date(batch.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 text-slate-300">
-                      {new Date(batch.enrollmentDate).toLocaleDateString()}
+                      {new Date(batch.enrollmentStartDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – {new Date(batch.enrollmentEndDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 text-slate-300">
+                      {batch.enrolledCount} / {batch.batchSize}
+                      <br/>
+                      <span className="text-xs text-slate-500">{batch.batchSize - (batch.enrolledCount || 0)} available</span>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          batch.status === "ACTIVE"
+                          batch.dynamicStatus === "ACTIVE"
                             ? "bg-emerald-500/20 text-emerald-400"
+                            : batch.dynamicStatus === "ENROLLMENT_OPEN"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : batch.dynamicStatus === "FULL" || batch.dynamicStatus === "ENROLLMENT_CLOSED"
+                            ? "bg-red-500/20 text-red-400"
+                            : batch.dynamicStatus === "COMPLETED"
+                            ? "bg-purple-500/20 text-purple-400"
+                            : batch.dynamicStatus === "UPCOMING"
+                            ? "bg-amber-500/20 text-amber-400"
                             : "bg-slate-600/20 text-slate-400"
                         }`}
                       >
-                        {batch.status}
+                        {batch.dynamicStatus || batch.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

@@ -33,13 +33,13 @@ export default function AdminLearnersPage() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
+    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
       router.push("/");
     }
   }, [isAuthenticated, user, router]);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
+    if (isAuthenticated && (user?.role === "ADMIN" || user?.role === "INSTRUCTOR")) {
       fetchLearners();
     }
   }, [isAuthenticated, user]);
@@ -61,7 +61,7 @@ export default function AdminLearnersPage() {
     l.batch.batchTitle.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
+  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
