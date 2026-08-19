@@ -53,8 +53,8 @@ export default function MyModulesPage() {
       if (batch?.batchTitle) setBatchTitle(batch.batchTitle);
 
       const [modulesRes, progressRes] = await Promise.all([
-        apiFetch(`/modules?batchId=${batchId}`),
-        apiFetch(`/modules/progress?batchId=${batchId}`),
+        apiFetch(`/modules?courseId=${batch.courseId}`),
+        apiFetch(`/modules/progress?courseId=${batch.courseId}`),
       ]);
 
       if (!modulesRes.success || !modulesRes.data) {

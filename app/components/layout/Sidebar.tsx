@@ -142,6 +142,7 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
     {
       title: "ENROLLMENT / MANAGEMENT",
       items: [
+        { href: "/admin/courses", label: "Courses", icon: icons.modules },
         { href: "/admin/batches", label: "Batches", icon: icons.batches },
         { href: "/admin/learners", label: "Learners", icon: icons.learners },
         { href: "/admin/modules", label: "Modules", icon: icons.modules },

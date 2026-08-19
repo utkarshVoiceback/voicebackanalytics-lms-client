@@ -5,15 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addModule } from "@/store/moduleSlice";
-import { setBatches } from "@/store/batchSlice";
+import { setCourses } from "@/store/courseSlice";
 
 function CreateModuleForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { batches } = useAppSelector((state) => state.batch);
+  const { courses } = useAppSelector((state) => state.course);
 
-  const [batchId, setBatchId] = useState(searchParams.get("batchId") || "");
+  const [courseId, setcourseId] = useState(searchParams.get("courseId") || "");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [sequenceOrder, setSequenceOrder] = useState<number>(1);
@@ -22,13 +22,13 @@ function CreateModuleForm() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchBatches();
+    fetchcourses();
   }, []);
 
-  const fetchBatches = async () => {
-    const res = await apiFetch("/batches");
+  const fetchcourses = async () => {
+    const res = await apiFetch("/courses");
     if (res.success && res.data) {
-      dispatch(setBatches(res.data));
+      dispatch(setCourses(res.data));
     }
   };
 
@@ -36,8 +36,8 @@ function CreateModuleForm() {
     e.preventDefault();
     setError(null);
 
-    if (!batchId || !title || !sequenceOrder) {
-      setError("Batch, Title, and Sequence Order are required");
+    if (!courseId || !title || !sequenceOrder) {
+      setError("course, Title, and Sequence Order are required");
       return;
     }
 
@@ -45,7 +45,7 @@ function CreateModuleForm() {
     const res = await apiFetch("/modules", {
       method: "POST",
       body: JSON.stringify({
-        batchId,
+        courseId,
         title,
         description,
         sequenceOrder,
@@ -77,7 +77,7 @@ function CreateModuleForm() {
             Back to Modules
           </button>
           <h1 className="text-3xl font-bold text-white tracking-tight">Create Module</h1>
-          <p className="text-slate-400 mt-1">Add a new learning module to a batch</p>
+          <p className="text-slate-400 mt-1">Add a new learning module to a course</p>
         </div>
 
         {/* Form */}
@@ -94,18 +94,18 @@ function CreateModuleForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Batch <span className="text-red-400">*</span>
+                course <span className="text-red-400">*</span>
               </label>
               <select
-                value={batchId}
-                onChange={(e) => setBatchId(e.target.value)}
+                value={courseId}
+                onChange={(e) => setcourseId(e.target.value)}
                 required
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
-                <option value="">-- Select a Batch --</option>
-                {batches.map((batch) => (
-                  <option key={batch.id} value={batch.id}>
-                    {batch.batchTitle} ({new Date(batch.startDate).getFullYear()}–{new Date(batch.endDate).getFullYear()})
+                <option value="">-- Select a course --</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
                   </option>
                 ))}
               </select>
