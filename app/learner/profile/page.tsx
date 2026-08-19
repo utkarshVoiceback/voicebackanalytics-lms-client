@@ -55,7 +55,7 @@ export default function ProfilePage() {
         setProfile(profileRes.data);
 
         // Fetch progress stats
-        const progressRes = await apiFetch(`/modules/progress?batchId=${profileRes.data.batchId}`);
+        const progressRes = await apiFetch(`/modules/progress?courseId=${profileRes.data.batch?.courseId}`);
         if (progressRes.success && progressRes.data) {
           const completed = progressRes.data.filter((p: any) => p.status === "COMPLETED").length;
           const inProgress = progressRes.data.filter(

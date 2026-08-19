@@ -7,6 +7,7 @@ import { useAppSelector } from "@/store";
 
 interface BatchInfo {
   id: string;
+  courseId: string;
   batchTitle: string;
   startDate: string;
   endDate: string;
@@ -61,8 +62,8 @@ export default function MyBatchPage() {
 
       if (profileData.batchId) {
         const [modulesRes, progressRes] = await Promise.all([
-          apiFetch(`/modules?batchId=${profileData.batchId}`),
-          apiFetch(`/modules/progress?batchId=${profileData.batchId}`),
+          apiFetch(`/modules?courseId=${profileData.batch?.courseId}`),
+          apiFetch(`/modules/progress?courseId=${profileData.batch?.courseId}`),
         ]);
 
         if (modulesRes.success && modulesRes.data) {

@@ -5,43 +5,38 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setModules, setModuleLoading } from "@/store/moduleSlice";
-import { setBatches } from "@/store/batchSlice";
+import { setCourses } from "@/store/courseSlice";
 
 export default function AdminModulesPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { modules, loading } = useAppSelector((state) => state.module);
-  const { batches } = useAppSelector((state) => state.batch);
-  const [selectedBatchId, setSelectedBatchId] = useState<string>("");
+  const { courses } = useAppSelector((state) => state.course);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
   useEffect(() => {
-    fetchBatches();
+    fetchcourses();
   }, []);
 
   useEffect(() => {
-    if (selectedBatchId) {
-      fetchModules(selectedBatchId);
+    if (selectedCourseId) {
+      fetchModules(selectedCourseId);
     }
-  }, [selectedBatchId]);
+  }, [selectedCourseId]);
 
-  const fetchBatches = async () => {
-    const res = await apiFetch("/batches");
+  const fetchcourses = async () => {
+    const res = await apiFetch("/courses");
     if (res.success && res.data) {
-      dispatch(setBatches(res.data));
-      if (res.data.length > 0 && !selectedBatchId) {
-        const saved = localStorage.getItem("lastSelectedBatchId");
-        if (saved && res.data.some((batch) => batch.id === saved)) {
-          setSelectedBatchId(saved);
-        } else {
-          setSelectedBatchId(res.data[0].id);
-        }
+      dispatch(setCourses(res.data));
+      if (res.data.length > 0 && !selectedCourseId) {
+        setSelectedCourseId(res.data[0].id);
       }
     }
   };
 
-  const fetchModules = async (batchId: string) => {
+  const fetchModules = async (courseId: string) => {
     dispatch(setModuleLoading(true));
-    const res = await apiFetch(`/modules?batchId=${batchId}`);
+    const res = await apiFetch(`/modules?courseId=${courseId}`);
     if (res.success && res.data) {
       dispatch(setModules(res.data));
     }
@@ -61,7 +56,7 @@ export default function AdminModulesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Learning Modules</h1>
-            <p className="text-slate-400 mt-1">Manage batch-specific learning modules and sequence order</p>
+            <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p>
           </div>
           <button
             onClick={() => router.push("/admin/modules/create")}
@@ -74,21 +69,18 @@ export default function AdminModulesPage() {
           </button>
         </div>
 
-        {/* Batch Selector */}
+        {/* course Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-300 mb-2">Select Batch</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Select course</label>
           <select
-            value={selectedBatchId}
-            onChange={(e) => {
-              localStorage.setItem("lastSelectedBatchId", e.target.value);
-              setSelectedBatchId(e.target.value);
-            }}
+            value={selectedCourseId}
+            onChange={(e) => setSelectedCourseId(e.target.value)}
             className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           >
-            <option value="">-- Select a Batch --</option>
-            {batches.map((batch) => (
-              <option key={batch.id} value={batch.id}>
-                {batch.batchTitle} ({new Date(batch.startDate).getFullYear()}–{new Date(batch.endDate).getFullYear()})
+            <option value="">-- Select a course --</option>
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title}
               </option>
             ))}
           </select>
@@ -102,7 +94,7 @@ export default function AdminModulesPage() {
         )}
 
         {/* Empty State */}
-        {!loading && selectedBatchId && modules.length === 0 && (
+        {!loading && selectedCourseId && modules.length === 0 && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4">
               <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -110,9 +102,9 @@ export default function AdminModulesPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">No modules yet</h3>
-            <p className="text-slate-400 mb-6">Create your first learning module for this batch</p>
+            <p className="text-slate-400 mb-6">Create your first learning module for this course</p>
             <button
-              onClick={() => router.push(`/admin/modules/create?batchId=${selectedBatchId}`)}
+              onClick={() => router.push(`/admin/modules/create?courseId=${selectedCourseId}`)}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
