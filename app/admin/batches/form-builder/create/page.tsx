@@ -24,6 +24,12 @@ const STANDARD_FIELDS: FormField[] = [
   { key: "fullName", label: "Full Name", type: "text", required: true, isStandard: true },
   { key: "email", label: "Email", type: "email", required: true, isStandard: true },
   { key: "mobile", label: "Mobile", type: "text", required: true, isStandard: true },
+  { key: "highestEducation", label: "Highest Education", type: "select", required: true, isStandard: true, options: ["High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "PhD", "Other"] },
+  { key: "profilePic", label: "Profile Picture", type: "file", required: false, isStandard: true },
+  { key: "address", label: "Address", type: "text", required: false, isStandard: true },
+  { key: "dob", label: "Date of Birth", type: "date", required: false, isStandard: true },
+  { key: "city", label: "City", type: "text", required: false, isStandard: true },
+  { key: "gender", label: "Gender", type: "select", required: false, isStandard: true, options: ["Male", "Female", "Other"] },
 ];
 
 export default function CreateFormPage() {
