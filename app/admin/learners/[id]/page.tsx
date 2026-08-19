@@ -11,6 +11,7 @@ interface Learner {
   userId: string;
   batchId: string;
   status: string;
+  extraData?: string | null;
   user: {
     fullName: string;
     email: string;
@@ -138,9 +139,34 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
           ← Back to Learners
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">{learner.user.fullName}</h1>
-            <p className="text-slate-400 mt-1">{learner.user.email} {learner.user.mobile ? `• ${learner.user.mobile}` : ''}</p>
+          <div className="flex items-start gap-4">
+            {(() => {
+              let profilePic = null;
+              if (learner.extraData) {
+                try {
+                  const extraData = JSON.parse(learner.extraData);
+                  profilePic = extraData?.profilePic;
+                } catch (e) {
+                  // Invalid JSON, skip
+                }
+              }
+
+              return profilePic ? (
+                <img
+                  src={profilePic}
+                  alt={learner.user.fullName}
+                  className="w-16 h-16 rounded-lg object-cover border border-slate-700"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg border border-slate-700">
+                  {learner.user.fullName.charAt(0).toUpperCase()}
+                </div>
+              );
+            })()}
+            <div>
+              <h1 className="text-lg font-bold text-white tracking-tight">{learner.user.fullName}</h1>
+              <p className="text-slate-400 mt-1 text-sm">{learner.user.email} {learner.user.mobile ? `• ${learner.user.mobile}` : ''}</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link 
@@ -166,44 +192,11 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Profile Info & Progress Summary */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Enrollment Details</h3>
-            <div className="space-y-4 text-sm">
-              <div>
-                <p className="text-slate-500 mb-1">Batch</p>
-                <p className="font-medium text-slate-300">{learner.batch.batchTitle}</p>
-              </div>
-              <div>
-                <p className="text-slate-500 mb-1">Duration</p>
-                <p className="font-medium text-slate-300">
-                  {new Date(learner.batch.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – {new Date(learner.batch.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Overall Progress</h3>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-400">Completion</span>
-              <span className="text-lg font-bold text-blue-400">{overallProgress}%</span>
-            </div>
-            <div className="w-full bg-slate-800 rounded-full h-3">
-              <div 
-                className="bg-blue-600 h-3 rounded-full transition-all duration-500" 
-                style={{ width: `${overallProgress}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Training Progress / Assessments */}
+        {/* Left Column: Training Progress / Assessments */}
         <div className="lg:col-span-2">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white mb-6">Training & Assessments</h3>
-            
+
             {assessments.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 No modules found for this batch.
@@ -224,7 +217,7 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
                           <span>{a.questionCount} Questions</span>
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
                         <span className={`inline-flex px-2 py-1 rounded text-xs font-semibold ${
                           a.assessmentStatus === "COMPLETED" ? "bg-emerald-500/10 text-emerald-400" :
@@ -258,6 +251,39 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Right Column: Profile Info & Progress Summary */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Enrollment Details</h3>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-slate-500 mb-1">Batch</p>
+                <p className="font-medium text-slate-300">{learner.batch.batchTitle}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 mb-1">Duration</p>
+                <p className="font-medium text-slate-300">
+                  {new Date(learner.batch.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – {new Date(learner.batch.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Overall Progress</h3>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-400">Completion</span>
+              <span className="text-lg font-bold text-blue-400">{overallProgress}%</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-3">
+              <div
+                className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${overallProgress}%` }}
+              ></div>
+            </div>
           </div>
         </div>
       </div>
