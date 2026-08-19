@@ -28,11 +28,18 @@ interface QuizResult {
   passed: boolean;
 }
 
+interface ModuleData {
+  id: string;
+  title: string;
+  sequenceOrder: number;
+}
+
 export default function LearnerQuizPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
 
   const [questions, setQuestions] = useState<QuestionData[]>([]);
+  const [module, setModule] = useState<ModuleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,11 +57,27 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
 
   const fetchQuiz = async () => {
     setLoading(true);
-    const res = await apiFetch(`/modules/${id}/quiz`);
-    if (res.success && res.data) {
-      setQuestions(res.data);
-    } else {
-      setError(res.message || "Failed to load quiz. You may need to complete the module content first.");
+    try {
+      const [quizRes, moduleRes] = await Promise.all([
+        apiFetch(`/modules/${id}/quiz`),
+        apiFetch(`/modules/${id}`),
+      ]);
+
+      if (quizRes.success && quizRes.data) {
+        setQuestions(quizRes.data);
+      } else {
+        setError(quizRes.message || "Failed to load quiz. You may need to complete the module content first.");
+      }
+
+      if (moduleRes.success && moduleRes.data) {
+        setModule({
+          id: moduleRes.data.id,
+          title: moduleRes.data.title,
+          sequenceOrder: moduleRes.data.sequenceOrder,
+        });
+      }
+    } catch (err) {
+      setError("Failed to load quiz data.");
     }
     setLoading(false);
   };
@@ -215,15 +238,22 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push(`/learner/modules/${id}`)} className="text-slate-400 hover:text-white transition-colors">
+          <div className="flex items-center gap-4 min-w-0">
+            <button onClick={() => router.push(`/learner/modules/${id}`)} className="text-slate-400 hover:text-white transition-colors shrink-0">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
             </button>
-            <h1 className="text-lg font-bold text-white">Module Assessment</h1>
+            <div className="min-w-0">
+              {module && (
+                <p className="text-xs font-medium text-slate-500 truncate">Module {module.sequenceOrder}</p>
+              )}
+              <h1 className="text-lg font-bold text-white truncate">
+                {module ? `${module.title} - Assessment` : "Module Assessment"}
+              </h1>
+            </div>
           </div>
-          <div className="text-sm font-medium text-slate-400">
+          <div className="text-sm font-medium text-slate-400 shrink-0 ml-4">
             {Object.keys(selections).length} / {questions.length} Answered
           </div>
         </div>

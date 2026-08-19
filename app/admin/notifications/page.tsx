@@ -5,6 +5,26 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
 
+interface Learner {
+  id: string;
+  userId: string;
+  batchId: string;
+  user: {
+    fullName: string;
+    email: string;
+  };
+  batch: {
+    batchTitle: string;
+  };
+}
+
+interface Batch {
+  id: string;
+  batchTitle: string;
+  startDate: string;
+  endDate: string;
+}
+
 interface Notification {
   id: string;
   title: string;
@@ -14,6 +34,9 @@ interface Notification {
   recipient: {
     fullName: string;
     email: string;
+  } | null;
+  batch: {
+    batchTitle: string;
   } | null;
 }
 
@@ -29,6 +52,13 @@ export default function AdminNotificationsPage() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [targetType, setTargetType] = useState<"BATCH" | "LEARNER">("BATCH");
+  const [batchId, setBatchId] = useState("");
+  const [selectedLearnerIds, setSelectedLearnerIds] = useState<string[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [learners, setLearners] = useState<Learner[]>([]);
+  const [loadingData, setLoadingData] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -55,29 +85,76 @@ export default function AdminNotificationsPage() {
     setLoading(false);
   };
 
+  const fetchBatchesAndLearners = async () => {
+    setLoadingData(true);
+    try {
+      const batchRes = await apiFetch("/batches");
+      if (batchRes.success && batchRes.data) {
+        setBatches(batchRes.data);
+      }
+
+      const learnerRes = await apiFetch("/learner/admin/all");
+      if (learnerRes.success && learnerRes.data) {
+        setLearners(learnerRes.data);
+      }
+    } catch (err) {
+      setError("Failed to load batches or learners");
+    }
+    setLoadingData(false);
+  };
+
   const handleSendNotification = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+    setError(null);
+
+    if (targetType === "BATCH" && !batchId) {
+      setError("Please select a batch");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (targetType === "LEARNER" && selectedLearnerIds.length === 0) {
+      setError("Please select at least one learner");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const payload: any = {
+      title,
+      message,
+      targetType,
+    };
+
+    if (targetType === "BATCH") {
+      payload.batchId = batchId;
+    } else if (targetType === "LEARNER") {
+      payload.learnerIds = selectedLearnerIds;
+    }
+
     const res = await apiFetch("/notifications", {
       method: "POST",
-      body: JSON.stringify({
-        title,
-        message,
-        // recipientId is null for global broadcast
-        recipientId: null,
-      })
+      body: JSON.stringify(payload),
     });
 
     if (res.success) {
       setShowForm(false);
       setTitle("");
       setMessage("");
+      setTargetType("BATCH");
+      setBatchId("");
+      setSelectedLearnerIds([]);
       fetchNotifications();
     } else {
       setError(res.message || "Failed to send notification");
     }
     setIsSubmitting(false);
+  };
+
+  const toggleLearnerSelection = (learnerId: string) => {
+    setSelectedLearnerIds((prev) =>
+      prev.includes(learnerId) ? prev.filter((id) => id !== learnerId) : [...prev, learnerId]
+    );
   };
 
   if (!isAuthenticated || !user || user.role !== "ADMIN") {
@@ -114,7 +191,7 @@ export default function AdminNotificationsPage() {
 
       {showForm && (
         <form onSubmit={handleSendNotification} className="mb-8 bg-slate-900 border border-slate-800 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Send Global Notification</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Send Notification</h3>
           <div className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-slate-300 mb-1.5">
@@ -144,17 +221,127 @@ export default function AdminNotificationsPage() {
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
+
+            {/* Target Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2.5">
+                Target <span className="text-red-400">*</span>
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="targetType"
+                    value="BATCH"
+                    checked={targetType === "BATCH"}
+                    onChange={() => {
+                      setTargetType("BATCH");
+                      setSelectedLearnerIds([]);
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-slate-300">Select by Batch</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="targetType"
+                    value="LEARNER"
+                    checked={targetType === "LEARNER"}
+                    onChange={() => {
+                      setTargetType("LEARNER");
+                      setBatchId("");
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-slate-300">Select by Learner</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Batch Selection */}
+            {targetType === "BATCH" && (
+              <div>
+                <label htmlFor="batch" className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Batch <span className="text-red-400">*</span>
+                </label>
+                <select
+                  id="batch"
+                  value={batchId}
+                  onChange={(e) => {
+                    setBatchId(e.target.value);
+                    fetchBatchesAndLearners();
+                  }}
+                  onFocus={() => {
+                    if (batches.length === 0) {
+                      fetchBatchesAndLearners();
+                    }
+                  }}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">-- Select a Batch --</option>
+                  {batches.map((batch) => (
+                    <option key={batch.id} value={batch.id}>
+                      {batch.batchTitle}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Learner Selection */}
+            {targetType === "LEARNER" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Learners <span className="text-red-400">*</span>
+                </label>
+                <div className="space-y-2 bg-slate-800 rounded-lg p-3 max-h-64 overflow-y-auto border border-slate-700">
+                  {loadingData ? (
+                    <div className="text-center py-4 text-slate-400">Loading learners...</div>
+                  ) : learners.length === 0 ? (
+                    <div className="text-center py-4 text-slate-400">No learners found</div>
+                  ) : (
+                    learners.map((learner) => (
+                      <label key={learner.userId} className="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedLearnerIds.includes(learner.userId)}
+                          onChange={() => toggleLearnerSelection(learner.userId)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm text-slate-300">
+                          {learner.user.fullName} ({learner.batch.batchTitle})
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                {selectedLearnerIds.length > 0 && (
+                  <div className="text-xs text-slate-400 mt-2">
+                    {selectedLearnerIds.length} learner(s) selected
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-3 justify-end pt-2">
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setTitle("");
+                  setMessage("");
+                  setTargetType("BATCH");
+                  setBatchId("");
+                  setSelectedLearnerIds([]);
+                }}
                 className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || loadingData}
                 className="px-6 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm disabled:opacity-50"
               >
                 {isSubmitting ? "Sending..." : "Send Notification"}
@@ -200,6 +387,10 @@ export default function AdminNotificationsPage() {
                           <div className="text-white">{n.recipient.fullName}</div>
                           <div className="text-xs text-slate-500">{n.recipient.email}</div>
                         </div>
+                      ) : n.batch ? (
+                        <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
+                          Batch: {n.batch.batchTitle}
+                        </span>
                       ) : (
                         <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
                           Global Broadcast
