@@ -358,11 +358,11 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
         { href: "/admin/batches", label: "Batches", icon: icons.batches },
         { href: "/admin/learners", label: "Learners", icon: icons.learners },
         { href: "/admin/modules", label: "Modules", icon: icons.modules },
-        {
-          href: "/admin/assessments",
-          label: "Assessment",
-          icon: icons.assessments,
-        },
+        // {
+        //   href: "/admin/assessments",
+        //   label: "Assessment",
+        //   icon: icons.assessments,
+        // },
       ],
     },
     // {

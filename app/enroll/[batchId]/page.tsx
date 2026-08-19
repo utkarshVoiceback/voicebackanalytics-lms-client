@@ -38,10 +38,7 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
   const [batchError, setBatchError] = useState<string | null>(null);
   const [batch, setBatch] = useState<BatchDetails | null>(null);
 
-  // Standard account-creation fields (always present)
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+  // Password fields (not part of template, always present)
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -79,12 +76,11 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
     setDynamicFiles((prev) => ({ ...prev, [key]: file }));
   };
 
-  // Client-side validation of dynamic fields
+  // Client-side validation of all template fields (standard + custom)
   const validateDynamic = (): string | null => {
     if (!batch?.formTemplate) return null;
-    const customFields = batch.formTemplate.fields.filter((f) => !f.isStandard);
 
-    for (const field of customFields) {
+    for (const field of batch.formTemplate.fields) {
       const value = dynamicValues[field.key];
       const file = dynamicFiles[field.key];
 
@@ -128,7 +124,7 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       return;
     }
 
-    // Validate dynamic fields
+    // Validate all template fields
     const dynamicError = validateDynamic();
     if (dynamicError) {
       setSubmitError(dynamicError);
@@ -145,19 +141,16 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
     if (hasFiles) {
       // Use FormData for multipart upload
       const formData = new FormData();
-      formData.append("fullName", fullName);
-      formData.append("email", email);
-      formData.append("mobileNumber", mobileNumber);
       formData.append("password", password);
 
-      // Add dynamic text values
+      // Add all template field values
       for (const [key, value] of Object.entries(dynamicValues)) {
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, String(value));
         }
       }
 
-      // Add dynamic files
+      // Add files
       for (const [key, file] of Object.entries(dynamicFiles)) {
         if (file) {
           formData.append(key, file);
@@ -170,9 +163,9 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       });
     } else {
       // Standard JSON submission
-      const body: Record<string, any> = { fullName, email, mobileNumber, password };
+      const body: Record<string, any> = { password };
 
-      // Add dynamic values
+      // Add all template field values
       for (const [key, value] of Object.entries(dynamicValues)) {
         if (value !== undefined && value !== null && value !== "") {
           body[key] = value;
@@ -405,107 +398,64 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
           </div>
 
           <form onSubmit={handleSubmit} className="p-8">
-            {/* Standard Account Fields - always present */}
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-6">Personal Information</h2>
-            <div className="space-y-6">
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-slate-300 mb-2">
-                  Full Name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  id="fullName"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                  placeholder="John Doe"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                    Email Address <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                    placeholder="john@example.com"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="mobile" className="block text-sm font-medium text-slate-300 mb-2">
-                    Mobile Number <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="mobile"
-                    type="tel"
-                    required
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                    placeholder="+1 234 567 8900"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
-                    Password <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    required
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                    placeholder="Create a password"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
-                    Confirm Password <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    required
-                    minLength={6}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                    placeholder="Confirm password"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Dynamic Custom Fields from FormTemplate */}
-            {customFields.length > 0 && (
+            {/* Form Template Fields (from batch form configuration) */}
+            {formTemplate && formTemplate.fields.length > 0 ? (
               <>
-                <div className="mt-10 mb-6 border-t border-slate-800 pt-6">
-                  <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
-                    Additional Information
-                  </h2>
-                </div>
+                <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-6">Personal Information</h2>
                 <div className="space-y-6">
-                  {customFields.map((field) => (
+                  {formTemplate.fields.map((field) => (
                     <div key={field.key}>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        {field.label}{" "}
-                        {field.required && <span className="text-red-400">*</span>}
+                        {field.label} {field.required && <span className="text-red-400">*</span>}
                       </label>
                       {renderDynamicField(field)}
                     </div>
                   ))}
+
+                  {/* Password fields (not in template, always required) */}
+                  <div className="mt-8 pt-6 border-t border-slate-700">
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Account Security</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+                          Password <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          id="password"
+                          type="password"
+                          required
+                          minLength={6}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                          placeholder="Create a password"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                          Confirm Password <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          id="confirmPassword"
+                          type="password"
+                          required
+                          minLength={6}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                          placeholder="Confirm password"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Fallback when no template exists */
+              <>
+                <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-6">Personal Information</h2>
+                <div className="space-y-6">
+                  <p className="text-slate-400">Loading form fields...</p>
                 </div>
               </>
             )}
