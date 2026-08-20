@@ -24,12 +24,12 @@ const STANDARD_FIELDS: FormField[] = [
   { key: "fullName", label: "Full Name", type: "text", required: true, isStandard: true },
   { key: "email", label: "Email", type: "email", required: true, isStandard: true },
   { key: "mobile", label: "Mobile", type: "text", required: true, isStandard: true },
-  { key: "highestEducation", label: "Highest Education", type: "select", required: true, isStandard: true, options: ["High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "PhD", "Other"] },
   { key: "profilePic", label: "Profile Picture", type: "file", required: false, isStandard: true },
   { key: "address", label: "Address", type: "text", required: false, isStandard: true },
   { key: "dob", label: "Date of Birth", type: "date", required: false, isStandard: true },
   { key: "city", label: "City", type: "text", required: false, isStandard: true },
   { key: "gender", label: "Gender", type: "select", required: false, isStandard: true, options: ["Male", "Female", "Other"] },
+  { key: "highestEducation", label: "Highest Education", type: "select", required: false, isStandard: true, options: ["High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "PhD", "Other"] },
 ];
 
 export default function CreateFormPage() {
@@ -40,6 +40,7 @@ export default function CreateFormPage() {
   const [selectedBatchId, setSelectedBatchId] = useState("");
   const [formName, setFormName] = useState("");
   const [customFields, setCustomFields] = useState<FormField[]>([]);
+  const [removedStandardFields, setRemovedStandardFields] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +98,12 @@ export default function CreateFormPage() {
     setCustomFields(customFields.filter((_, i) => i !== index));
   };
 
+  const removeStandardField = (fieldKey: string) => {
+    const updated = new Set(removedStandardFields);
+    updated.add(fieldKey);
+    setRemovedStandardFields(updated);
+  };
+
   const moveFieldUp = (index: number) => {
     if (index === 0) return;
     const updated = [...customFields];
@@ -139,7 +146,9 @@ export default function CreateFormPage() {
 
     setSaving(true);
 
-    const fields = [...STANDARD_FIELDS, ...customFields];
+    // Filter out removed standard fields
+    const activeStandardFields = STANDARD_FIELDS.filter((field) => !removedStandardFields.has(field.key));
+    const fields = [...activeStandardFields, ...customFields];
 
     const res = await apiFetch("/form-templates", {
       method: "POST",
@@ -285,23 +294,40 @@ export default function CreateFormPage() {
             />
           </div>
 
-          {/* Standard Fields (Read-only) */}
+          {/* Standard Fields */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Standard Fields (Always Included)</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Standard Fields</h3>
             <div className="space-y-3">
-              {STANDARD_FIELDS.map((field) => (
-                <div key={field.key} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <p className="text-white font-medium">{field.label}</p>
-                      <p className="text-slate-400 text-sm">Type: {field.type}</p>
+              {STANDARD_FIELDS.filter((field) => !removedStandardFields.has(field.key)).map((field) => {
+                const isRequired = ["fullName", "email", "mobile"].includes(field.key);
+
+                return (
+                  <div key={field.key} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{field.label}</p>
+                        <p className="text-slate-400 text-sm">Type: {field.type}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isRequired && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold">
+                            Required
+                          </span>
+                        )}
+                        {!isRequired && (
+                          <button
+                            type="button"
+                            onClick={() => removeStandardField(field.key)}
+                            className="text-red-400 hover:text-red-300 text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold">
-                      Required
-                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

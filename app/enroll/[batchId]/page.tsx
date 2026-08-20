@@ -27,7 +27,7 @@ interface BatchDetails {
   enrollmentStartDate: string;
   enrollmentEndDate: string;
   status: string;
-  formTemplate: FormTemplateData | null;
+  formTemplate?: FormTemplateData | null;
 }
 
 export default function EnrollmentPage({ params }: { params: Promise<{ batchId: string }> }) {
@@ -63,7 +63,7 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
     if (res.success && res.data) {
       setBatch(res.data);
     } else {
-      setBatchError("This enrollment link is invalid or no longer available.");
+      setBatchError(res.message || "This enrollment link is invalid or no longer available.");
     }
     setBatchLoading(false);
   };
@@ -76,7 +76,7 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
     setDynamicFiles((prev) => ({ ...prev, [key]: file }));
   };
 
-  // Client-side validation of all template fields (standard + custom)
+  // Client-side validation of template fields
   const validateDynamic = (): string | null => {
     if (!batch?.formTemplate) return null;
 
@@ -141,12 +141,17 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
     if (hasFiles) {
       // Use FormData for multipart upload
       const formData = new FormData();
+      formData.append("fullName", dynamicValues.fullName || "");
+      formData.append("email", dynamicValues.email || "");
+      formData.append("mobile", dynamicValues.mobile || "");
       formData.append("password", password);
 
-      // Add all template field values
-      for (const [key, value] of Object.entries(dynamicValues)) {
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(key, String(value));
+      // Add all non-standard template field values
+      if (batch?.formTemplate) {
+        for (const field of batch.formTemplate.fields) {
+          if (!field.isStandard && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
+            formData.append(field.key, String(dynamicValues[field.key]));
+          }
         }
       }
 
@@ -163,12 +168,19 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       });
     } else {
       // Standard JSON submission
-      const body: Record<string, any> = { password };
+      const body: Record<string, any> = {
+        fullName: dynamicValues.fullName || "",
+        email: dynamicValues.email || "",
+        mobileNumber: dynamicValues.mobile || "",
+        password
+      };
 
-      // Add all template field values
-      for (const [key, value] of Object.entries(dynamicValues)) {
-        if (value !== undefined && value !== null && value !== "") {
-          body[key] = value;
+      // Add all non-standard template field values
+      if (batch?.formTemplate) {
+        for (const field of batch.formTemplate.fields) {
+          if (!field.isStandard && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
+            body[field.key] = dynamicValues[field.key];
+          }
         }
       }
 
@@ -406,7 +418,9 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
                   {formTemplate.fields.map((field) => (
                     <div key={field.key}>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        {field.label} {field.required && <span className="text-red-400">*</span>}
+                        {field.label}
+                        {field.required && <span className="text-red-400">*</span>}
+                        {!field.required && <span className="text-slate-500 text-xs ml-1">(Optional)</span>}
                       </label>
                       {renderDynamicField(field)}
                     </div>
