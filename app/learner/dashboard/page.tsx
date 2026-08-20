@@ -46,12 +46,12 @@ export default function LearnerDashboardPage() {
       const profile = profileRes.data;
       setBatchInfo(profile.batch);
 
-      const batchId = profile.batchId;
+      const courseId = profile.batch?.courseId;
 
       // Fetch modules and progress in parallel
       const [modulesRes, progressRes] = await Promise.all([
-        apiFetch(`/modules?batchId=${batchId}`),
-        apiFetch(`/modules/progress?batchId=${batchId}`),
+        apiFetch(`/modules?courseId=${courseId}`),
+        apiFetch(`/modules/progress?courseId=${courseId}`),
       ]);
 
       if (modulesRes.success && modulesRes.data) {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,8 @@ export default function CreateBatchPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [batchTitle, setBatchTitle] = useState("");
+  const [courseId, setCourseId] = useState("");
+  const { courses } = useAppSelector((state) => state.course);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [enrollmentStartDate, setEnrollmentStartDate] = useState("");
@@ -20,6 +22,14 @@ export default function CreateBatchPage() {
   const [batchSize, setBatchSize] = useState("50");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiFetch("/courses").then((res) => {
+      if (res.success && res.data) {
+        dispatch(require("@/store/courseSlice").setCourses(res.data));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -43,6 +53,7 @@ export default function CreateBatchPage() {
     const res = await apiFetch("/batches", {
       method: "POST",
       body: JSON.stringify({
+        courseId,
         batchTitle,
         startDate,
         endDate,
@@ -102,9 +113,29 @@ export default function CreateBatchPage() {
             required
             value={batchTitle}
             onChange={(e) => setBatchTitle(e.target.value)}
-            placeholder="e.g. Skilvo Training 2026–2027"
+            placeholder="e.g. Skilvo Training 2026-2027"
             className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
+        </div>
+
+        <div>
+          <label htmlFor="course" className="block text-sm font-medium text-slate-300 mb-1.5">
+            Course <span className="text-red-400">*</span>
+          </label>
+          <select
+            id="course"
+            required
+            value={courseId}
+            onChange={(e) => setCourseId(e.target.value)}
+            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+          >
+            <option value="">-- Select a course --</option>
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
