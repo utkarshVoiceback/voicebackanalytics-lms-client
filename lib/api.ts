@@ -62,3 +62,50 @@ export async function apiFetch<T = any>(
     };
   }
 }
+
+export async function apiFetchBlob(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<{ blob: Blob | null; error: string | null }> {
+  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
+  const defaultHeaders: Record<string, string> = {};
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('lms_auth_token');
+    if (token) {
+      defaultHeaders['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  const finalHeaders = {
+    ...defaultHeaders,
+    ...options.headers,
+  };
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: finalHeaders,
+    });
+
+    if (!response.ok) {
+      let errorMsg = `HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorMsg;
+      } catch {
+        // If response isn't JSON, use the status message
+      }
+      return { blob: null, error: errorMsg };
+    }
+
+    const blob = await response.blob();
+    return { blob, error: null };
+  } catch (error: any) {
+    return {
+      blob: null,
+      error: error.message || 'Failed to fetch file',
+    };
+  }
+}

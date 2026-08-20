@@ -3,12 +3,15 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import SecurePdfViewer from "../../components/SecurePdfViewer";
 
 interface Content {
   id: string;
   contentType: string;
   contentUrl: string | null;
   textContent: string | null;
+  title?: string | null;
+  description?: string | null;
   estimatedMinutes: number;
 }
 
@@ -115,6 +118,26 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
       return url;
     };
 
+    // For PPT viewing (relabeled "View Presentation", external URLs only since no secure viewer built yet)
+    const renderPresentationCard = (fullUrl: string, title: string) => (
+      <a
+        href={fullUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-4 rounded-xl border p-4 transition-colors group border-orange-500/30 bg-orange-950/20 hover:bg-orange-950/30"
+      >
+        <div className="p-3 rounded-lg bg-orange-500/10">
+          <svg className="w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold transition-colors text-orange-100 group-hover:text-orange-300">View Presentation</p>
+          <p className="text-sm text-slate-400 truncate max-w-sm">{title || "Open Document"}</p>
+        </div>
+      </a>
+    );
+
     if (content.contentType === "VIDEO" && content.contentUrl) {
       const isLocal = content.contentUrl.startsWith("/uploads/");
       // Convert YouTube watch URL to embed URL if not local
@@ -152,35 +175,31 @@ export default function LearnerModuleViewPage({ params }: { params: Promise<{ id
       );
     }
 
-    if ((content.contentType === "PDF" || content.contentType === "PPT") && content.contentUrl) {
-      const fullUrl = getFullUrl(content.contentUrl);
-      const isPdf = content.contentType === "PDF";
+    if (content.contentType === "PDF" && content.contentUrl) {
       return (
         <div key={content.id} className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <svg className={`w-5 h-5 ${isPdf ? "text-red-400" : "text-orange-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
-            <span className="text-sm font-medium text-slate-300">{isPdf ? "PDF Document" : "Presentation"} · {content.estimatedMinutes} min</span>
+            <span className="text-sm font-medium text-slate-300">PDF Document · {content.estimatedMinutes} min</span>
           </div>
-          <a
-            href={fullUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex items-center gap-4 rounded-xl border p-4 transition-colors group ${isPdf ? "border-red-500/30 bg-red-950/20 hover:bg-red-950/30" : "border-orange-500/30 bg-orange-950/20 hover:bg-orange-950/30"}`}
-          >
-            <div className={`p-3 rounded-lg ${isPdf ? "bg-red-500/10" : "bg-orange-500/10"}`}>
-              <svg className={`w-8 h-8 ${isPdf ? "text-red-400" : "text-orange-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className={`font-semibold transition-colors ${isPdf ? "text-red-100 group-hover:text-red-300" : "text-orange-100 group-hover:text-orange-300"}`}>
-                Download {isPdf ? "PDF" : "Presentation"}
-              </p>
-              <p className="text-sm text-slate-400 truncate max-w-sm">View Document</p>
-            </div>
-          </a>
+          <SecurePdfViewer contentId={content.id} title={content.title || "PDF Document"} />
+        </div>
+      );
+    }
+
+    if (content.contentType === "PPT" && content.contentUrl) {
+      const fullUrl = getFullUrl(content.contentUrl);
+      return (
+        <div key={content.id} className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            </svg>
+            <span className="text-sm font-medium text-slate-300">Presentation · {content.estimatedMinutes} min</span>
+          </div>
+          {renderPresentationCard(fullUrl, content.title || "Presentation")}
         </div>
       );
     }
