@@ -5,34 +5,17 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setModules, setModuleLoading } from "@/store/moduleSlice";
-import { setCourses } from "@/store/courseSlice";
 
 export default function AdminModulesPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { modules, loading } = useAppSelector((state) => state.module);
-  const { courses } = useAppSelector((state) => state.course);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+
+  const GROUND_STAFF_COURSE_ID = "25F5B4C7-BE1C-4D1E-9590-205854065B99";
 
   useEffect(() => {
-    fetchcourses();
+    fetchModules(GROUND_STAFF_COURSE_ID);
   }, []);
-
-  useEffect(() => {
-    if (selectedCourseId) {
-      fetchModules(selectedCourseId);
-    }
-  }, [selectedCourseId]);
-
-  const fetchcourses = async () => {
-    const res = await apiFetch("/courses");
-    if (res.success && res.data) {
-      dispatch(setCourses(res.data));
-      if (res.data.length > 0 && !selectedCourseId) {
-        setSelectedCourseId(res.data[0].id);
-      }
-    }
-  };
 
   const fetchModules = async (courseId: string) => {
     dispatch(setModuleLoading(true));
@@ -56,6 +39,7 @@ export default function AdminModulesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Learning Modules</h1>
+            {/* <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p> */}
             <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p>
           </div>
           <button
@@ -69,22 +53,6 @@ export default function AdminModulesPage() {
           </button>
         </div>
 
-        {/* course Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-300 mb-2">Select course</label>
-          <select
-            value={selectedCourseId}
-            onChange={(e) => setSelectedCourseId(e.target.value)}
-            className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          >
-            <option value="">-- Select a course --</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.title}
-              </option>
-            ))}
-          </select>
-        </div>
 
         {/* Loading State */}
         {loading && (
@@ -94,7 +62,7 @@ export default function AdminModulesPage() {
         )}
 
         {/* Empty State */}
-        {!loading && selectedCourseId && modules.length === 0 && (
+        {!loading && modules.length === 0 && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4">
               <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -102,9 +70,9 @@ export default function AdminModulesPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">No modules yet</h3>
-            <p className="text-slate-400 mb-6">Create your first learning module for this course</p>
+            <p className="text-slate-400 mb-6">Create your first learning module for Ground Staff</p>
             <button
-              onClick={() => router.push(`/admin/modules/create?courseId=${selectedCourseId}`)}
+              onClick={() => router.push(`/admin/modules/create?courseId=${GROUND_STAFF_COURSE_ID}`)}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

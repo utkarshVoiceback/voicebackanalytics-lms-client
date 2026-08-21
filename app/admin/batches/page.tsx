@@ -16,6 +16,7 @@ export default function BatchListPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [lastSelectedBatchId, setLastSelectedBatchId] = useState<string | null>(null);
+  const [batchFormMap, setBatchFormMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -36,6 +37,7 @@ export default function BatchListPage() {
   useEffect(() => {
     if (isAuthenticated && user?.role === "ADMIN") {
       fetchBatches();
+      fetchEnrollmentForms();
     }
   }, [isAuthenticated, user]);
 
@@ -62,6 +64,18 @@ export default function BatchListPage() {
   const handleSelectBatch = (batchId: string) => {
     localStorage.setItem("lastSelectedBatchId", batchId);
     setLastSelectedBatchId(batchId);
+  };
+
+  const fetchEnrollmentForms = async () => {
+    const res = await apiFetch("/enrollment-forms");
+    if (res.success && res.data) {
+      const map: Record<string, string> = {};
+      for (const form of res.data) {
+        const bId = form.batchId || form.batch?.id;
+        if (bId && !map[bId]) map[bId] = form.id;
+      }
+      setBatchFormMap(map);
+    }
   };
 
   if (!isAuthenticated || !user || user.role !== "ADMIN") {
@@ -165,6 +179,7 @@ export default function BatchListPage() {
                   <th className="px-6 py-4 font-medium">Enrollment Period</th>
                   <th className="px-6 py-4 font-medium">Capacity</th>
                   <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium text-right">Enrollment</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -208,6 +223,24 @@ export default function BatchListPage() {
                       >
                         {batch.dynamicStatus || batch.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {batchFormMap[batch.id] ? (
+                        <Link
+                          href={`/admin/enrollments/upload?formId=${batchFormMap[batch.id]}&batchId=${batch.id}`}
+                          className="text-green-400 hover:text-green-300 text-sm font-medium transition-colors"
+                        >
+                          Go to Enrollment
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/admin/batches/${batch.id}`}
+                          className="text-slate-500 hover:text-slate-400 text-sm font-medium transition-colors"
+                          title="Generate the enrollment form first"
+                        >
+                          Generate Enrollment Form
+                        </Link>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
