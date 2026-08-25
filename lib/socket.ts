@@ -1,8 +1,8 @@
 import { io, Socket } from "socket.io-client";
+import { API_SERVER_URL } from "./api";
 
 class SocketService {
   private socket: Socket | null = null;
-  private backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   private getCookie(name: string): string | undefined {
     if (typeof document === "undefined") return undefined;
@@ -16,7 +16,7 @@ class SocketService {
     if (!this.socket) {
       const token = this.getCookie("lms_auth_token") || (typeof localStorage !== "undefined" ? localStorage.getItem("lms_auth_token") : null);
 
-      this.socket = io(this.backendUrl.replace("/api/v1", ""), {
+      this.socket = io(API_SERVER_URL, {
         auth: {
           token
         }

@@ -40,7 +40,7 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
       setError(null);
 
       const { blob, error: fetchError } = await apiFetchBlob(
-        `/modules/content/${contentId}/file`
+        `/modules/content/${contentId}/file?proxy=true`
       );
 
       if (fetchError || !blob) {

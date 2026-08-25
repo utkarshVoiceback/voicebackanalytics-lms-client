@@ -71,8 +71,9 @@ export default function AdminModulesPage() {
 
         {/* course Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-300 mb-2">Select course</label>
+          {/* <label className="block text-sm font-medium text-slate-300 mb-2">Select course</label> */}
           <select
+          disabled={true}
             value={selectedCourseId}
             onChange={(e) => setSelectedCourseId(e.target.value)}
             className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"

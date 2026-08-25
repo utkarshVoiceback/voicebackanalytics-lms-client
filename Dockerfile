@@ -19,15 +19,6 @@ RUN npm ci
 COPY . .
 
 # Build the Next.js application
-# NEXT_PUBLIC_ env vars must be set at BUILD time for Next.js
-ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
-ARG NEXT_PUBLIC_API_SERVER_URL=http://localhost:5000
-ARG NEXT_PUBLIC_API_URL=http://localhost:5000
-
-ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_API_SERVER_URL=$NEXT_PUBLIC_API_SERVER_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
 RUN npm run build
 
 # ============================================
@@ -37,21 +28,26 @@ FROM node:22-slim
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
-
-# Copy scripts folder for postinstall
-COPY scripts/ ./scripts/
-RUN mkdir -p public
-
-# Install production dependencies only
-RUN npm ci --omit=dev
-
-# Copy built Next.js output from builder
+# IMPORTANT: We copy .next FIRST from builder before running npm ci in stage 2.
+# This forces Docker BuildKit to wait for Stage 1 to finish completely before 
+# starting Stage 2's npm ci, reducing peak RAM usage and preventing engine crashes.
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/scripts/ ./scripts/
+COPY --from=builder /app/package.json /app/package-lock.json* ./
+
+RUN mkdir -p public
+
+# Install production dependencies only (now runs sequentially after build)
+RUN npm ci --omit=dev
+
+# Make sure scripts are executable
+RUN chmod +x ./scripts/generate-env.sh
+
+# Change ownership of public directory so node user can write env-config.js
+RUN chown -R node:node /app/public
 
 # Use non-root user for security
 USER node
@@ -63,4 +59,5 @@ EXPOSE 3000
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-CMD ["npm", "start"]
+# Generate runtime env config and start Next.js
+CMD ["/bin/sh", "-c", "./scripts/generate-env.sh && npm start"]
