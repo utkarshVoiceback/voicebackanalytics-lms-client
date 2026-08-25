@@ -33,7 +33,8 @@ export default function MyModulesPage() {
   const [modules, setModules] = useState<ModuleWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [batchTitle, setBatchTitle] = useState<string>("");
+
+  const GROUND_STAFF_COURSE_ID = "25F5B4C7-BE1C-4D1E-9590-205854065B99";
 
   useEffect(() => {
     fetchModules();
@@ -43,18 +44,9 @@ export default function MyModulesPage() {
     setLoading(true);
     setError(null);
     try {
-      const profileRes = await apiFetch("/learner/profile");
-      if (!profileRes.success || !profileRes.data) {
-        setError("You are not enrolled in any batch.");
-        setLoading(false);
-        return;
-      }
-      const { batchId, batch } = profileRes.data;
-      if (batch?.batchTitle) setBatchTitle(batch.batchTitle);
-
       const [modulesRes, progressRes] = await Promise.all([
-        apiFetch(`/modules?courseId=${batch.courseId}`),
-        apiFetch(`/modules/progress?courseId=${batch.courseId}`),
+        apiFetch(`/modules?courseId=${GROUND_STAFF_COURSE_ID}`),
+        apiFetch(`/modules/progress?courseId=${GROUND_STAFF_COURSE_ID}`),
       ]);
 
       if (!modulesRes.success || !modulesRes.data) {
@@ -222,9 +214,7 @@ export default function MyModulesPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">My Modules</h1>
-            {batchTitle && (
-              <p className="text-slate-400 mt-1">{batchTitle}</p>
-            )}
+            <p className="text-slate-400 mt-1">Ground Staff</p>
           </div>
           {modules.length > 0 && (
             <div className="text-right">
