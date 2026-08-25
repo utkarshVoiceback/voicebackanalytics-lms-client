@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 import { useAppDispatch } from "@/store";
 import { setCurrentModule, updateModuleInList } from "@/store/moduleSlice";
 
@@ -73,7 +73,7 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
   const [contentUrl, setContentUrl] = useState("");
   const [textContent, setTextContent] = useState("");
   const [estimatedMinutes, setEstimatedMinutes] = useState(10);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [addContentLoading, setAddContentLoading] = useState(false);
 
@@ -167,14 +167,14 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
           setError(res.message || "Failed to add text content");
         }
       } else {
-        if (!uploadFile) {
+        if (uploadFiles.length === 0) {
           setError("Please select a file to upload.");
           setAddContentLoading(false);
           return;
         }
 
         const formData = new FormData();
-        formData.append("file", uploadFile);
+        uploadFiles.forEach(file => formData.append("files", file));
         formData.append("contentType", contentType);
         formData.append("title", contentTitle);
         formData.append("description", contentDescription);
@@ -185,7 +185,7 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
         // Use XMLHttpRequest for progress tracking
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/modules/${id}/content/upload`);
+          xhr.open("POST", `${API_BASE_URL}/modules/${id}/content/upload`);
           if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
           xhr.upload.onprogress = (event) => {
@@ -228,7 +228,7 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
     setContentUrl("");
     setTextContent("");
     setEstimatedMinutes(10);
-    setUploadFile(null);
+    setUploadFiles([]);
     setUploadProgress(0);
   };
 
@@ -449,7 +449,7 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
                       <option value="TEXT">Text</option>
                       <option value="VIDEO">Video</option>
                       <option value="PDF">PDF</option>
-                      <option value="PPT">PPT</option>
+                      {/* <option value="PPT">PPT</option> */}
                     </select>
                   </div>
                   <div>
@@ -477,17 +477,34 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
                 {contentType !== "TEXT" && (
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Upload File</label>
-                    <input 
-                      type="file" 
-                      onChange={(e) => setUploadFile(e.target.files ? e.target.files[0] : null)}
-                      accept={
-                        contentType === "VIDEO" ? "video/mp4,video/webm,video/quicktime" : 
-                        contentType === "PDF" ? "application/pdf" : 
-                        ".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                      }
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500" 
-                    />
-                    {uploadProgress > 0 && uploadProgress < 100 && (
+                      <input 
+                        type="file"
+                        multiple
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setUploadFiles(Array.from(e.target.files));
+                          }
+                        }}
+                        accept={
+                          contentType === "VIDEO" ? "video/mp4,video/webm,video/quicktime" : 
+                          contentType === "PDF" ? "application/pdf" : 
+                          ".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                        }
+                        className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500" 
+                      />
+                      
+                      {uploadFiles.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {uploadFiles.map((f, i) => (
+                            <div key={i} className="flex justify-between items-center bg-slate-700 p-2 rounded text-sm">
+                              <span className="truncate mr-4">{f.name}</span>
+                              <button type="button" onClick={() => setUploadFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-300 flex-shrink-0">Remove</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {uploadProgress > 0 && uploadProgress < 100 && (
                       <div className="mt-2 w-full bg-slate-700 rounded-full h-2.5">
                         <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                       </div>

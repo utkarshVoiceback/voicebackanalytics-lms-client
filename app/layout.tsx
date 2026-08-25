@@ -18,12 +18,18 @@ export const metadata: Metadata = {
   description: "Learning Management System by Skilvo",
 };
 
+import Script from "next/script";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Load runtime environment variables injected by Docker */}
+        <Script src="/env-config.js" strategy="beforeInteractive" />
+      </head>
       <body className="min-h-full bg-slate-950 text-slate-100">
         <StoreProvider>
           {children}
