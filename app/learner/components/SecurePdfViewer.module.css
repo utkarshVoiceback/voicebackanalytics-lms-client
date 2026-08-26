@@ -170,9 +170,44 @@
   font-weight: 500;
 }
 
+.resizeHandle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24px;
+  cursor: ns-resize;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 0.375rem;
+  margin-top: -0.5rem;
+  transition: background 150ms ease;
+}
+
+.resizeHandle:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.resizeGrip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gripLine {
+  width: 32px;
+  height: 2px;
+  background-color: rgba(148, 163, 184, 0.5);
+  border-radius: 1px;
+}
+
+.resizeHandle:hover .gripLine {
+  background-color: rgba(148, 163, 184, 0.8);
+}
+
 /* Prevent printing */
 @media print {
   .securePdfContainer {
     display: none !important;
   }
 }
+

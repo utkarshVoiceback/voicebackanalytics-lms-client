@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import React, { useEffect, useRef, useState } from "react";
 import { apiFetchBlob } from "@/lib/api";
 import * as pdfjsLib from "pdfjs-dist";
 import styles from "./SecurePdfViewer.module.css";
+
 
 interface SecurePdfViewerProps {
   contentId: string;
@@ -13,8 +12,6 @@ interface SecurePdfViewerProps {
 }
 
 export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerProps) {
-  const user = useSelector((state: RootState) => state.auth.user);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -22,11 +19,52 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
   const [scale, setScale] = useState(1.5);
   const [isBlurred, setIsBlurred] = useState(false);
   const [isDevtoolsOpen, setIsDevtoolsOpen] = useState(false);
+  
+  // Resizing state
+  const [viewerHeight, setViewerHeight] = useState<number>(600); // Default reasonable height
+  const [isDragging, setIsDragging] = useState(false);
+  const startY = useRef(0);
+  const startHeight = useRef(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pdfRef = useRef<any>(null);
   const pdfUrlRef = useRef<string>("");
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const delta = e.clientY - startY.current;
+      const newHeight = startHeight.current + delta;
+      // Min 300px, no maximum limit
+      const clampedHeight = Math.max(300, newHeight);
+      setViewerHeight(clampedHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "none";
+    } else {
+      document.body.style.userSelect = "";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+    };
+  }, [isDragging]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    startY.current = e.clientY;
+    startHeight.current = viewerHeight;
+  };
 
   // Initialize PDF.js worker
   useEffect(() => {
@@ -102,7 +140,7 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
     };
 
     renderPage();
-  }, [currentPage, scale, pdfRef]);
+  }, [currentPage, scale, loading]);
 
   // Deterrents: prevent right-click, copying, printing, devtools
   useEffect(() => {
@@ -183,20 +221,6 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
 
     return () => clearInterval(interval);
   }, []);
-
-  // Format timestamp for watermark
-  const now = new Date();
-  const timestamp = now.toLocaleString("en-IN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  const watermarkText = `${user?.fullName || "User"} · ${user?.email || "email@example.com"} · ${timestamp}`;
 
   if (loading) {
     return (
@@ -311,8 +335,11 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
         </div>
       </div>
 
-      {/* Canvas with watermark */}
-      <div className={`${styles.canvasContainer} ${isBlurred ? styles.blurred : ""}`}>
+      {/* Canvas */}
+      <div 
+        className={`${styles.canvasContainer} ${isBlurred ? styles.blurred : ""}`}
+        style={{ height: `${viewerHeight}px`, maxHeight: 'none' }}
+      >
         <canvas
           ref={canvasRef}
           className={styles.pdfCanvas}
@@ -320,33 +347,18 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
             filter: isBlurred || isDevtoolsOpen ? "blur(20px)" : "none",
           }}
         />
+      </div>
 
-        {/* Watermark overlay */}
-        <div className={styles.watermark} style={{ opacity: isBlurred ? 0.5 : 0.15 }}>
-          {/* Generate repeating watermark text diagonally */}
-          <svg
-            className={styles.watermarkSvg}
-            width="400"
-            height="400"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <pattern id="watermark" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
-                <text
-                  x="0"
-                  y="100"
-                  fontSize="14"
-                  fontFamily="Arial, sans-serif"
-                  fill="currentColor"
-                  transform="rotate(-30)"
-                  textAnchor="start"
-                >
-                  {watermarkText}
-                </text>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#watermark)" />
-          </svg>
+      {/* Resize Handle */}
+      <div 
+        className={styles.resizeHandle}
+        onMouseDown={handleMouseDown}
+        title="Drag to resize PDF viewer vertically"
+      >
+        <div className={styles.resizeGrip}>
+          <div className={styles.gripLine} />
+          <div className={styles.gripLine} />
+          <div className={styles.gripLine} />
         </div>
       </div>
     </div>
