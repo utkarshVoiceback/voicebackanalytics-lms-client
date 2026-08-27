@@ -1,6 +1,7 @@
 import HeroSlider from "./components/HeroSlider";
 import Link from "next/link";
 import LoginButton from "./components/LoginButton";
+import ThemeToggle from "./components/theme/ThemeToggle";
 
 const FEATURES = [
   {
@@ -68,12 +69,12 @@ const STATS = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       {/* ── Navbar (DO NOT MODIFY) ───────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
+      <nav className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold text-white">Skilvo</div>
-          <div className="flex gap-4">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white">Skilvo</div>
+          <div className="flex items-center gap-4">
             <LoginButton />
             <Link
               href="/enroll"
@@ -81,6 +82,7 @@ export default function Home() {
             >
               Enroll
             </Link>
+            <ThemeToggle variant="icon-button" />
           </div>
         </div>
       </nav>
@@ -92,13 +94,13 @@ export default function Home() {
         </section>
 
         {/* ── 2. Stats Strip ───────────────────────────────────────── */}
-        <section className="bg-slate-900 border-y border-slate-800">
+        <section className="bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
               {STATS.map((s) => (
                 <div key={s.label} className="text-center">
-                  <dt className="text-3xl font-bold text-blue-400 mb-1">{s.value}</dt>
-                  <dd className="text-sm text-slate-400">{s.label}</dd>
+                  <dt className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{s.value}</dt>
+                  <dd className="text-sm text-slate-500 dark:text-slate-400">{s.label}</dd>
                 </div>
               ))}
             </dl>
@@ -110,18 +112,18 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Text */}
             <div>
-              <p className="text-xs font-semibold text-blue-400 tracking-widest uppercase mb-3">
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase mb-3">
                 Welcome to Skilvo
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-5 leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-5 leading-tight">
                 Advance Your Career with
-                <span className="text-blue-400"> Professional Learning</span>
+                <span className="text-blue-600 dark:text-blue-400"> Professional Learning</span>
               </h2>
-              <p className="text-slate-400 mb-4 leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
                 Skilvo is a modern Learning Management System built for organizations and individuals who
                 value structured, accessible, and results-driven education.
               </p>
-              <p className="text-slate-500 mb-8 leading-relaxed text-sm">
+              <p className="text-slate-400 dark:text-slate-500 mb-8 leading-relaxed text-sm">
                 From onboarding programs to advanced skill certifications, Skilvo gives your team the
                 tools to grow — at their own pace, on any device.
               </p>
@@ -137,7 +139,7 @@ export default function Home() {
             </div>
 
             {/* Visual card */}
-            <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-8">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
               <div className="space-y-4">
                 {[
                   { label: "Course completion rate", value: 94, color: "bg-blue-500" },
@@ -146,10 +148,10 @@ export default function Home() {
                 ].map((item) => (
                   <div key={item.label}>
                     <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-sm text-slate-300">{item.label}</span>
-                      <span className="text-sm font-semibold text-white">{item.value}%</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-300">{item.label}</span>
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">{item.value}%</span>
                     </div>
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${item.color}`}
                         style={{ width: `${item.value}%` }}
@@ -158,14 +160,14 @@ export default function Home() {
                   </div>
                 ))}
 
-                <div className="pt-4 mt-2 border-t border-slate-800 grid grid-cols-2 gap-4">
-                  <div className="bg-slate-800/60 rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-white mb-1">50+</p>
-                    <p className="text-xs text-slate-400">Courses available</p>
+                <div className="pt-4 mt-2 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-4">
+                  <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mb-1">50+</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Courses available</p>
                   </div>
-                  <div className="bg-slate-800/60 rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-white mb-1">1000+</p>
-                    <p className="text-xs text-slate-400">Enrolled learners</p>
+                  <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mb-1">1000+</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Enrolled learners</p>
                   </div>
                 </div>
               </div>
@@ -174,16 +176,16 @@ export default function Home() {
         </section>
 
         {/* ── 4. Features Section ──────────────────────────────────── */}
-        <section className="bg-slate-900 border-t border-slate-800 py-16 sm:py-20">
+        <section className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold text-blue-400 tracking-widest uppercase mb-3">
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase mb-3">
                 Platform Features
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
                 Everything You Need to Learn Effectively
               </h2>
-              <p className="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
+              <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
                 Skilvo brings together powerful tools for learners and administrators in one clean, intuitive platform.
               </p>
             </div>
@@ -192,13 +194,13 @@ export default function Home() {
               {FEATURES.map((feature, idx) => (
                 <div
                   key={idx}
-                  className="group bg-slate-950/60 border border-slate-800 rounded-xl p-6 hover:border-blue-500/40 hover:bg-slate-950 transition-all duration-200"
+                  className="group bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 hover:border-blue-500/40 hover:bg-slate-100 dark:hover:bg-slate-950 transition-all duration-200"
                 >
-                  <div className="w-11 h-11 flex items-center justify-center rounded-lg bg-blue-600/10 text-blue-400 mb-4 group-hover:bg-blue-600/20 transition-colors">
+                  <div className="w-11 h-11 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 mb-4 group-hover:bg-blue-100 dark:group-hover:bg-blue-600/20 transition-colors">
                     {feature.icon}
                   </div>
-                  <h3 className="text-base font-semibold text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -208,18 +210,18 @@ export default function Home() {
         {/* ── 5. How It Works ──────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-blue-400 tracking-widest uppercase mb-3">
+            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase mb-3">
               Simple Process
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">How It Works</h2>
-            <p className="text-slate-400 max-w-md mx-auto text-sm">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">How It Works</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm">
               Get started in minutes — enroll, learn, and grow.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-8 relative">
             {/* Connecting line (desktop only) */}
-            <div className="hidden sm:block absolute top-8 left-[20%] right-[20%] h-px bg-slate-800" />
+            <div className="hidden sm:block absolute top-8 left-[20%] right-[20%] h-px bg-slate-200 dark:bg-slate-800" />
 
             {[
               {
@@ -239,11 +241,11 @@ export default function Home() {
               },
             ].map((step) => (
               <div key={step.step} className="text-center relative">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/10 border border-blue-600/30 text-blue-400 font-bold text-lg mb-4 relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-600/30 text-blue-600 dark:text-blue-400 font-bold text-lg mb-4 relative z-10">
                   {step.step}
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed max-w-xs mx-auto">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{step.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
                   {step.description}
                 </p>
               </div>
@@ -252,12 +254,12 @@ export default function Home() {
         </section>
 
         {/* ── 6. CTA Section ───────────────────────────────────────── */}
-        <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-800">
+        <section className="bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-950 border-t border-slate-200 dark:border-slate-800">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               Ready to Start Learning?
             </h2>
-            <p className="text-slate-400 mb-8 text-sm sm:text-base max-w-lg mx-auto">
+            <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm sm:text-base max-w-lg mx-auto">
               Join thousands of learners who are already advancing their skills and careers with Skilvo.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -274,61 +276,61 @@ export default function Home() {
       </main>
 
       {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer className="bg-slate-900 border-t border-slate-800">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 sm:col-span-1">
-              <div className="text-xl font-bold text-white mb-3">Skilvo</div>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <div className="text-xl font-bold text-slate-900 dark:text-white mb-3">Skilvo</div>
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                 Empowering learners worldwide with accessible, structured, quality education.
               </p>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Platform</h4>
-              <ul className="space-y-2.5 text-sm text-slate-400">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Platform</h4>
+              <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">Browse Courses</Link>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Browse Courses</Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">Popular Topics</Link>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Popular Topics</Link>
                 </li>
                 <li>
-                  <Link href="/enroll" className="hover:text-white transition-colors">Enroll</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Company</h4>
-              <ul className="space-y-2.5 text-sm text-slate-400">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">About</Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">Contact</Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">Blog</Link>
+                  <Link href="/enroll" className="hover:text-slate-900 dark:hover:text-white transition-colors">Enroll</Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Legal</h4>
-              <ul className="space-y-2.5 text-sm text-slate-400">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Company</h4>
+              <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">About</Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Blog</Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Legal</h4>
+              <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
+                <li>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <p className="text-slate-500 text-xs">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p className="text-slate-400 dark:text-slate-500 text-xs">
               &copy; {new Date().getFullYear()} Skilvo. All rights reserved.
             </p>
-            <p className="text-slate-600 text-xs">
+            <p className="text-slate-300 dark:text-slate-600 text-xs">
               Professional Learning Management Platform
             </p>
           </div>

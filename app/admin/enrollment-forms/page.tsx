@@ -75,8 +75,8 @@ export default function EnrollmentFormsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Enrollment Forms</h1>
-          <p className="text-slate-400 mt-1">Create and manage enrollment forms for batches</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Enrollment Forms</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Create and manage enrollment forms for batches</p>
         </div>
         <Link
           href="/admin/enrollment-forms/create"
@@ -96,13 +96,13 @@ export default function EnrollmentFormsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by form name or batch..."
-          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
       </form>
 
       {/* Error State */}
       {error && (
-        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
+        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
           <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
           </svg>
@@ -116,12 +116,12 @@ export default function EnrollmentFormsPage() {
           <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full" />
         </div>
       ) : forms.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-          <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
+          <svg className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3-8.75H18a2.25 2.25 0 0 1 2.25 2.25v6.75M3 7.5A2.25 2.25 0 0 1 5.25 5.25h13.5A2.25 2.25 0 0 1 21 7.5m-15 6h15m-15 3h15" />
           </svg>
-          <h3 className="text-lg font-medium text-slate-300 mb-2">No Enrollment Forms</h3>
-          <p className="text-slate-500 mb-6">Create your first enrollment form to start inviting learners</p>
+          <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">No Enrollment Forms</h3>
+          <p className="text-slate-400 dark:text-slate-500 mb-6">Create your first enrollment form to start inviting learners</p>
           <Link
             href="/admin/enrollment-forms/create"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
@@ -136,45 +136,45 @@ export default function EnrollmentFormsPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Form Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Batch</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Created</th>
-                <th className="text-right px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Form Name</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Batch</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Created</th>
+                <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {forms.map((form) => (
-                <tr key={form.id} className="hover:bg-slate-800/30 transition-colors">
+                <tr key={form.id} className="hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-white">{form.formName}</span>
-                    <p className="text-xs text-slate-500 mt-1">{form.id}</p>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{form.formName}</span>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{form.id}</p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{form.batch?.batchTitle || "—"}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{form.batch?.batchTitle || "—"}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       form.status === "ACTIVE"
-                        ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                        : "bg-slate-500/15 text-slate-300 border border-slate-500/30"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
+                        : "bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
                     }`}>
                       {form.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
+                  <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     {new Date(form.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/admin/enrollment-forms/${form.id}`}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm font-medium transition-colors"
                       >
                         View
                       </Link>
                       <Link
                         href={`/admin/enrollments/upload?formId=${form.id}`}
-                        className="text-green-400 hover:text-green-300 text-sm font-medium transition-colors"
+                        className="text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300 text-sm font-medium transition-colors"
                       >
                         Bulk Upload
                       </Link>

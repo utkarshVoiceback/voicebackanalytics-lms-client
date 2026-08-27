@@ -10,7 +10,7 @@ export default function LoginButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="px-4 py-2 text-slate-300 hover:text-white transition-colors cursor-pointer"
+        className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
       >
         Login
       </button>

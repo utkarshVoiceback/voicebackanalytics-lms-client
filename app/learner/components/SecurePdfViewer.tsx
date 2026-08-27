@@ -224,17 +224,17 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8 bg-slate-900 rounded-lg border border-slate-700">
-        <div className="text-slate-300">Loading PDF...</div>
+      <div className="flex items-center justify-center p-8 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 dark:border-slate-700">
+        <div className="text-slate-600 dark:text-slate-300">Loading PDF...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-red-950/20 border border-red-500/30 rounded-lg">
-        <p className="text-red-300 font-semibold">Error loading PDF</p>
-        <p className="text-red-200 text-sm mt-2">{error}</p>
+      <div className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-500/30 rounded-lg">
+        <p className="text-red-600 dark:text-red-300 font-semibold">Error loading PDF</p>
+        <p className="text-red-500 dark:text-red-200 text-sm mt-2">{error}</p>
       </div>
     );
   }
@@ -273,8 +273,8 @@ export default function SecurePdfViewer({ contentId, title }: SecurePdfViewerPro
       {/* Title */}
       {title && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             ⚠️ This document is confidential. Screenshots and unauthorized sharing are prohibited.
           </p>
         </div>

@@ -64,10 +64,10 @@ export default function HeroSlider() {
 
   if (loading) {
     return (
-      <div className="w-full bg-slate-800/50 flex items-center justify-center" style={{ minHeight: "300px" }}>
+      <div className="w-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center" style={{ minHeight: "300px" }}>
         <div className="flex flex-col items-center gap-3">
           <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full" />
-          <p className="text-slate-400 text-sm">Loading banner...</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Loading banner...</p>
         </div>
       </div>
     );
@@ -83,13 +83,13 @@ export default function HeroSlider() {
         }}
       >
         <div>
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+            <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
             </svg>
           </div>
-          <p className="text-slate-300 text-lg font-medium">Welcome to Skilvo</p>
-          <p className="text-slate-500 text-sm mt-1">Your professional learning platform</p>
+          <p className="text-slate-600 dark:text-slate-300 text-lg font-medium">Welcome to Skilvo</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Your professional learning platform</p>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function HeroSlider() {
   const hasImageError = imageUrl ? imageErrors[imageUrl] : false;
 
   return (
-    <div className="relative w-full overflow-hidden bg-slate-900">
+    <div className="relative w-full overflow-hidden bg-white dark:bg-slate-900">
       {/* Main slide area */}
       <div
         className="relative w-full"
@@ -141,7 +141,7 @@ export default function HeroSlider() {
                 </h1>
               )}
               {currentBanner.description && (
-                <p className="text-sm sm:text-base md:text-lg text-slate-200 mb-6 drop-shadow-md max-w-xl mx-auto leading-relaxed">
+                <p className="text-sm sm:text-base md:text-lg text-white mb-6 drop-shadow-md max-w-xl mx-auto leading-relaxed">
                   {currentBanner.description}
                 </p>
               )}
@@ -193,7 +193,7 @@ export default function HeroSlider() {
 
       {/* Dot indicators */}
       {banners.length > 1 && (
-        <div className="flex justify-center items-center gap-2 py-3 bg-slate-950/70">
+        <div className="flex justify-center items-center gap-2 py-3 bg-slate-100 dark:bg-slate-950/70">
           {banners.map((_, index) => (
             <button
               key={index}
@@ -201,7 +201,7 @@ export default function HeroSlider() {
               className={`rounded-full transition-all duration-300 ${
                 index === currentIndex
                   ? "w-6 h-2 bg-blue-500"
-                  : "w-2 h-2 bg-slate-600 hover:bg-slate-400"
+                  : "w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

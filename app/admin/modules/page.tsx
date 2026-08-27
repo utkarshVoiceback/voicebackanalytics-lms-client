@@ -28,19 +28,19 @@ export default function AdminModulesPage() {
 
   const getStatusColor = (status: string) => {
     return status === "ACTIVE"
-      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-      : "bg-slate-500/10 text-slate-400 border-slate-500/30";
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30"
+      : "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/30";
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Learning Modules</h1>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Learning Modules</h1>
             {/* <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p> */}
-            <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p>
           </div>
           <button
             onClick={() => router.push("/admin/modules/create")}
@@ -63,14 +63,14 @@ export default function AdminModulesPage() {
 
         {/* Empty State */}
         {!loading && modules.length === 0 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4">
-              <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
+              <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-1">No modules yet</h3>
-            <p className="text-slate-400 mb-6">Create your first learning module for Ground Staff</p>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No modules yet</h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">Create your first learning module for Ground Staff</p>
             <button
               onClick={() => router.push(`/admin/modules/create?courseId=${GROUND_STAFF_COURSE_ID}`)}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
@@ -90,18 +90,18 @@ export default function AdminModulesPage() {
               <div
                 key={module.id}
                 onClick={() => router.push(`/admin/modules/${module.id}`)}
-                className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 hover:bg-slate-900/80 transition-all cursor-pointer group"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-5">
                   {/* Sequence Number */}
-                  <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/20 text-blue-400 font-bold text-lg">
+                  <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-lg">
                     {module.sequenceOrder}
                   </div>
 
                   {/* Module Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors truncate">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                         {module.title}
                       </h3>
                       <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getStatusColor(module.status)}`}>
@@ -109,17 +109,17 @@ export default function AdminModulesPage() {
                       </span>
                     </div>
                     {module.description && (
-                      <p className="text-sm text-slate-400 truncate">{module.description}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{module.description}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2">
-                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                         {module.contents?.length || 0} content item(s)
                       </span>
                       {module.isSequential && (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-amber-400">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                           </svg>
@@ -130,7 +130,7 @@ export default function AdminModulesPage() {
                   </div>
 
                   {/* Arrow */}
-                  <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <svg className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                   </svg>
                 </div>
@@ -138,7 +138,7 @@ export default function AdminModulesPage() {
                 {/* Connector line between modules */}
                 {index < modules.length - 1 && (
                   <div className="flex justify-start ml-6 -mb-4">
-                    <div className="w-px h-4 bg-slate-700" />
+                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
                   </div>
                 )}
               </div>
