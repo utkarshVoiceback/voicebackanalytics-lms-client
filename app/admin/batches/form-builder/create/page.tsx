@@ -215,14 +215,14 @@ export default function CreateFormPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Link href="/admin/batches" className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block">
+      <Link href="/admin/batches" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-4 inline-block">
         ← Back to Batches
       </Link>
 
       {success && templateId ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-emerald-400 mb-4">Form Created Successfully!</h2>
-          <p className="text-slate-300 mb-6">Your form template has been created and is ready for use.</p>
+        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-8">
+          <h2 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 mb-4">Form Created Successfully!</h2>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">Your form template has been created and is ready for use.</p>
 
           <div className="flex gap-3 mb-8">
             <button
@@ -233,42 +233,42 @@ export default function CreateFormPage() {
             </button>
             <Link
               href="/admin/batches"
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors inline-block"
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors inline-block"
             >
               Back to Batches
             </Link>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <p className="text-slate-300 text-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
               <strong>Next steps:</strong> Download the template above, fill it with your learner data, and upload it from the Active Learners page to create accounts in bulk.
             </p>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-xl p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 space-y-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Create Form Template</h1>
-            <p className="text-slate-400">Design a custom form for your batch. Standard fields are always included.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create Form Template</h1>
+            <p className="text-slate-500 dark:text-slate-400">Design a custom form for your batch. Standard fields are always included.</p>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-300 text-sm">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4 text-red-700 dark:text-red-300 text-sm">
               {error}
             </div>
           )}
 
           {/* Batch Selection */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Select Batch <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+              Select Batch <span className="text-red-600 dark:text-red-400">*</span>
             </label>
             <select
               value={selectedBatchId}
               onChange={(e) => setSelectedBatchId(e.target.value)}
               required
               disabled={loading}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
             >
               <option value="">Choose a batch...</option>
               {batches.map((batch) => (
@@ -281,8 +281,8 @@ export default function CreateFormPage() {
 
           {/* Form Name */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Form Name <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+              Form Name <span className="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -290,27 +290,27 @@ export default function CreateFormPage() {
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Batch A Enrollment Form"
               required
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Standard Fields */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Standard Fields</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Standard Fields</h3>
             <div className="space-y-3">
               {STANDARD_FIELDS.filter((field) => !removedStandardFields.has(field.key)).map((field) => {
                 const isRequired = ["fullName", "email", "mobile"].includes(field.key);
 
                 return (
-                  <div key={field.key} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                  <div key={field.key} className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex-1">
-                        <p className="text-white font-medium">{field.label}</p>
-                        <p className="text-slate-400 text-sm">Type: {field.type}</p>
+                        <p className="text-slate-900 dark:text-white font-medium">{field.label}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Type: {field.type}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         {isRequired && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 text-xs font-semibold">
                             Required
                           </span>
                         )}
@@ -318,7 +318,7 @@ export default function CreateFormPage() {
                           <button
                             type="button"
                             onClick={() => removeStandardField(field.key)}
-                            className="text-red-400 hover:text-red-300 text-sm font-medium"
+                            className="text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                           >
                             Remove
                           </button>
@@ -334,7 +334,7 @@ export default function CreateFormPage() {
           {/* Custom Fields */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Custom Fields (Optional)</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Custom Fields (Optional)</h3>
               <button
                 type="button"
                 onClick={addCustomField}
@@ -345,23 +345,23 @@ export default function CreateFormPage() {
             </div>
 
             {customFields.length === 0 ? (
-              <p className="text-slate-400 text-sm">No custom fields added yet. Click &quot;Add Field&quot; to add one.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">No custom fields added yet. Click &quot;Add Field&quot; to add one.</p>
             ) : (
               <div className="space-y-4">
                 {customFields.map((field, index) => (
-                  <div key={field.key} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 space-y-3">
+                  <div key={field.key} className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700 space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
                         value={field.label}
                         onChange={(e) => updateCustomField(index, { label: e.target.value })}
                         placeholder="Field label (e.g., Qualification)"
-                        className="rounded border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="rounded border border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                       <select
                         value={field.type}
                         onChange={(e) => updateCustomField(index, { type: e.target.value as any })}
-                        className="rounded border border-slate-600 bg-slate-700 px-3 py-2 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="rounded border border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="text">Text</option>
                         <option value="email">Email</option>
@@ -376,8 +376,8 @@ export default function CreateFormPage() {
                     {/* Options input for select/radio */}
                     {(field.type === "select" || field.type === "radio") && (
                       <div>
-                        <label className="block text-xs text-slate-400 mb-1">
-                          Options (comma-separated) <span className="text-red-400">*</span>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          Options (comma-separated) <span className="text-red-600 dark:text-red-400">*</span>
                         </label>
                         <input
                           type="text"
@@ -388,18 +388,18 @@ export default function CreateFormPage() {
                             })
                           }
                           placeholder="e.g., Option A, Option B, Option C"
-                          className="w-full rounded border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                          className="w-full rounded border border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
                         />
                       </div>
                     )}
 
                     <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2 text-slate-300">
+                      <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                         <input
                           type="checkbox"
                           checked={field.required}
                           onChange={(e) => updateCustomField(index, { required: e.target.checked })}
-                          className="rounded border-slate-600"
+                          className="rounded border-slate-300 dark:border-slate-600"
                         />
                         <span className="text-sm">Required</span>
                       </label>
@@ -410,7 +410,7 @@ export default function CreateFormPage() {
                           type="button"
                           onClick={() => moveFieldUp(index)}
                           disabled={index === 0}
-                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="Move up"
                         >
                           ↑
@@ -419,7 +419,7 @@ export default function CreateFormPage() {
                           type="button"
                           onClick={() => moveFieldDown(index)}
                           disabled={index === customFields.length - 1}
-                          className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="Move down"
                         >
                           ↓
@@ -429,7 +429,7 @@ export default function CreateFormPage() {
                       <button
                         type="button"
                         onClick={() => removeCustomField(index)}
-                        className="text-red-400 hover:text-red-300 text-sm font-medium"
+                        className="text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                       >
                         Remove
                       </button>
@@ -441,7 +441,7 @@ export default function CreateFormPage() {
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-4 pt-6 border-t border-slate-800">
+          <div className="flex gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
             <button
               type="submit"
               disabled={saving || loading}
@@ -451,7 +451,7 @@ export default function CreateFormPage() {
             </button>
             <Link
               href="/admin/batches"
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors inline-flex items-center"
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors inline-flex items-center"
             >
               Cancel
             </Link>

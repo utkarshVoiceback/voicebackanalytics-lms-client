@@ -168,11 +168,11 @@ export default function EditBannerPage() {
   if (!banner) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
-          <p className="text-red-300">{error || "Banner not found"}</p>
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-6 text-center">
+          <p className="text-red-700 dark:text-red-300">{error || "Banner not found"}</p>
           <Link
             href="/admin/home-page/banners"
-            className="mt-4 inline-block text-blue-400 hover:text-blue-300"
+            className="mt-4 inline-block text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             ← Back to Banners
           </Link>
@@ -187,17 +187,17 @@ export default function EditBannerPage() {
       <div className="mb-8">
         <Link
           href="/admin/home-page/banners"
-          className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-2 inline-block"
+          className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block"
         >
           ← Back to Banners
         </Link>
-        <h1 className="text-3xl font-bold text-white mb-2">Edit Banner</h1>
-        <p className="text-slate-400">Update banner details and image</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Edit Banner</h1>
+        <p className="text-slate-500 dark:text-slate-400">Update banner details and image</p>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
+        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
           <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
           </svg>
@@ -208,10 +208,10 @@ export default function EditBannerPage() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-6 bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                 Title
               </label>
               <input
@@ -221,13 +221,13 @@ export default function EditBannerPage() {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="e.g., Learn New Skills"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                 Description
               </label>
               <textarea
@@ -237,14 +237,14 @@ export default function EditBannerPage() {
                 onChange={handleInputChange}
                 placeholder="Banner description"
                 rows={3}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* Button Text & URL */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="buttonText" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="buttonText" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                   Button Text
                 </label>
                 <input
@@ -254,12 +254,12 @@ export default function EditBannerPage() {
                   value={formData.buttonText}
                   onChange={handleInputChange}
                   placeholder="e.g., Get Started"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="buttonUrl" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="buttonUrl" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                   Button URL
                 </label>
                 <input
@@ -269,14 +269,14 @@ export default function EditBannerPage() {
                   value={formData.buttonUrl}
                   onChange={handleInputChange}
                   placeholder="https://example.com"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             {/* Display Order */}
             <div>
-              <label htmlFor="displayOrder" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="displayOrder" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                 Display Order
               </label>
               <input
@@ -285,15 +285,15 @@ export default function EditBannerPage() {
                 type="number"
                 value={formData.displayOrder}
                 onChange={handleInputChange}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
-              <p className="text-xs text-slate-500 mt-1">Lower numbers appear first</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lower numbers appear first</p>
             </div>
 
             {/* Dates */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="startDate" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                   Start Date
                 </label>
                 <input
@@ -302,12 +302,12 @@ export default function EditBannerPage() {
                   type="datetime-local"
                   value={formData.startDate}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="endDate" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                   End Date
                 </label>
                 <input
@@ -316,7 +316,7 @@ export default function EditBannerPage() {
                   type="datetime-local"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -332,7 +332,7 @@ export default function EditBannerPage() {
               </button>
               <Link
                 href="/admin/home-page/banners"
-                className="px-6 py-2.5 border border-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors"
+                className="px-6 py-2.5 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors"
               >
                 Cancel
               </Link>
@@ -342,20 +342,20 @@ export default function EditBannerPage() {
 
         {/* Image Section */}
         <div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Banner Image</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Banner Image</h3>
 
             {/* Upload Area */}
             <div className="mb-4">
               <label htmlFor="image" className="block">
-                <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 cursor-pointer hover:border-blue-500 hover:bg-slate-800/50 transition-colors text-center">
-                  <svg className="mx-auto h-12 w-12 text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-6 cursor-pointer hover:border-blue-500 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors text-center">
+                  <svg className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5zm10.5-11.25h.008v.008h-.008v-.008zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0z" />
                   </svg>
-                  <p className="text-sm text-slate-400">
-                    <span className="font-semibold text-blue-400">Click to upload</span> or drag and drop
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">Click to upload</span> or drag and drop
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">JPG, PNG or WebP (max 5MB)</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG or WebP (max 5MB)</p>
                 </div>
                 <input
                   id="image"
@@ -370,8 +370,8 @@ export default function EditBannerPage() {
             {/* Preview */}
             {previewUrl && (
               <div>
-                <p className="text-sm font-medium text-slate-300 mb-2">Current/Preview Image</p>
-                <div className="relative w-full aspect-video bg-slate-800 rounded-lg overflow-hidden border border-slate-700 mb-4">
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Current/Preview Image</p>
+                <div className="relative w-full aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 mb-4">
                   <Image
                     src={getImageUrl(previewUrl)}
                     alt="Banner"
@@ -380,7 +380,7 @@ export default function EditBannerPage() {
                   />
                 </div>
                 {selectedFile && (
-                  <p className="text-xs text-emerald-400">✓ New image ready to upload</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ New image ready to upload</p>
                 )}
               </div>
             )}

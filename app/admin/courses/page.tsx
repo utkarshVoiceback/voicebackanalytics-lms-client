@@ -27,16 +27,16 @@ export default function AdminCoursesPage() {
 
   const getStatusColor = (status: string) => {
     return status === "ACTIVE"
-      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-      : "bg-slate-500/10 text-slate-400 border-slate-500/30";
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30"
+      : "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/30";
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Courses</h1>
-          <p className="text-slate-400">Manage courses and their modules</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Courses</h1>
+          <p className="text-slate-500 dark:text-slate-400">Manage courses and their modules</p>
         </div>
         <Link
           href="/admin/courses/create"
@@ -55,10 +55,10 @@ export default function AdminCoursesPage() {
           {courses.map((course) => (
             <div
               key={course.id}
-              className="bg-[#1e293b]/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-[#1e293b]/80 hover:border-slate-600/50"
+              className="bg-slate-100/70 dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-300 dark:border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-slate-200/70 dark:hover:bg-[#1e293b]/80 hover:border-slate-400 dark:hover:border-slate-600/50"
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-white line-clamp-1 flex-1 pr-4" title={course.title}>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1 flex-1 pr-4" title={course.title}>
                   {course.title}
                 </h3>
                 <span
@@ -69,14 +69,14 @@ export default function AdminCoursesPage() {
                   {course.status}
                 </span>
               </div>
-              <p className="text-slate-400 text-sm mb-6 line-clamp-2">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">
                 {course.description || "No description provided."}
               </p>
-              
+
               <div className="flex flex-col gap-2">
                 <Link
                   href={`/admin/modules?courseId=${course.id}`}
-                  className="w-full text-center bg-slate-700/50 hover:bg-slate-600 text-white py-2 rounded-lg font-medium transition-colors text-sm"
+                  className="w-full text-center bg-slate-300/70 hover:bg-slate-400 dark:bg-slate-700/50 dark:hover:bg-slate-600 text-slate-900 dark:text-white py-2 rounded-lg font-medium transition-colors text-sm"
                 >
                   Manage Modules
                 </Link>
@@ -85,8 +85,8 @@ export default function AdminCoursesPage() {
           ))}
 
           {courses.length === 0 && !loading && (
-            <div className="col-span-full text-center py-12 bg-[#1e293b]/30 border border-slate-700/50 rounded-2xl border-dashed">
-              <p className="text-slate-400 mb-4">No courses found</p>
+            <div className="col-span-full text-center py-12 bg-slate-100/60 dark:bg-[#1e293b]/30 border border-slate-300 dark:border-slate-700/50 rounded-2xl border-dashed">
+              <p className="text-slate-500 dark:text-slate-400 mb-4">No courses found</p>
               <Link
                 href="/admin/courses/create"
                 className="text-primary-400 hover:text-primary-300 font-medium"

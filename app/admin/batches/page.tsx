@@ -91,8 +91,8 @@ export default function BatchListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Batch Management</h1>
-          <p className="text-slate-400 mt-1">Create and manage training batches</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Batch Management</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Create and manage training batches</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Link
@@ -123,12 +123,12 @@ export default function BatchListPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by batch title..."
-          className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         >
           <option value="">All Status</option>
           <option value="ACTIVE">Active</option>
@@ -136,7 +136,7 @@ export default function BatchListPage() {
         </select>
         <button
           type="submit"
-          className="px-4 py-2.5 text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+          className="px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors"
         >
           Search
         </button>
@@ -144,7 +144,7 @@ export default function BatchListPage() {
 
       {/* Error */}
       {error && (
-        <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
@@ -158,22 +158,22 @@ export default function BatchListPage() {
 
       {/* Empty State */}
       {!loading && batches.length === 0 && (
-        <div className="text-center py-16 bg-slate-900 border border-slate-800 rounded-xl">
-          <svg className="w-12 h-12 text-slate-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+          <svg className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
           </svg>
-          <h3 className="text-lg font-medium text-slate-300 mb-1">No batches found</h3>
-          <p className="text-sm text-slate-500">Create your first batch to get started.</p>
+          <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-1">No batches found</h3>
+          <p className="text-sm text-slate-400 dark:text-slate-500">Create your first batch to get started.</p>
         </div>
       )}
 
       {/* Batch Table */}
       {!loading && batches.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 uppercase text-xs tracking-wider">
+                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">
                   <th className="px-6 py-4 font-medium">Batch Title</th>
                   <th className="px-6 py-4 font-medium">Period</th>
                   <th className="px-6 py-4 font-medium">Enrollment Period</th>
@@ -183,42 +183,42 @@ export default function BatchListPage() {
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {batches.map((batch: Batch) => (
                   <tr
                     key={batch.id}
                     className={`transition-colors ${
                       lastSelectedBatchId === batch.id
-                        ? "bg-blue-900/30 hover:bg-blue-900/40"
-                        : "hover:bg-slate-800/50"
+                        ? "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/40"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800/50"
                     }`}
                   >
-                    <td className="px-6 py-4 font-medium text-white">{batch.batchTitle}</td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{batch.batchTitle}</td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                       {new Date(batch.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – {new Date(batch.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                       {new Date(batch.enrollmentStartDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – {new Date(batch.enrollmentEndDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                       {batch.enrolledCount} / {batch.batchSize}
                       <br/>
-                      <span className="text-xs text-slate-500">{batch.batchSize - (batch.enrolledCount || 0)} available</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">{batch.batchSize - (batch.enrolledCount || 0)} available</span>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           batch.dynamicStatus === "ACTIVE"
-                            ? "bg-emerald-500/20 text-emerald-400"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
                             : batch.dynamicStatus === "ENROLLMENT_OPEN"
-                            ? "bg-blue-500/20 text-blue-400"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
                             : batch.dynamicStatus === "FULL" || batch.dynamicStatus === "ENROLLMENT_CLOSED"
-                            ? "bg-red-500/20 text-red-400"
+                            ? "bg-red-50 text-red-700 dark:bg-red-500/20 dark:text-red-400"
                             : batch.dynamicStatus === "COMPLETED"
-                            ? "bg-purple-500/20 text-purple-400"
+                            ? "bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"
                             : batch.dynamicStatus === "UPCOMING"
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-slate-600/20 text-slate-400"
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                            : "bg-slate-100 text-slate-700 dark:bg-slate-600/20 dark:text-slate-400"
                         }`}
                       >
                         {batch.dynamicStatus || batch.status}
@@ -228,14 +228,14 @@ export default function BatchListPage() {
                       {batchFormMap[batch.id] ? (
                         <Link
                           href={`/admin/enrollments/upload?formId=${batchFormMap[batch.id]}&batchId=${batch.id}`}
-                          className="text-green-400 hover:text-green-300 text-sm font-medium transition-colors"
+                          className="text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium transition-colors"
                         >
                           Go to Enrollment
                         </Link>
                       ) : (
                         <Link
                           href={`/admin/batches/${batch.id}`}
-                          className="text-slate-500 hover:text-slate-400 text-sm font-medium transition-colors"
+                          className="text-slate-400 hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400 text-sm font-medium transition-colors"
                           title="Generate the enrollment form first"
                         >
                           Generate Enrollment Form
@@ -246,7 +246,7 @@ export default function BatchListPage() {
                       <Link
                         href={`/admin/batches/${batch.id}`}
                         onClick={() => handleSelectBatch(batch.id)}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium transition-colors"
                       >
                         View / Edit
                       </Link>

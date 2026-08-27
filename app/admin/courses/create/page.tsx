@@ -53,21 +53,21 @@ export default function CreateCoursePage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/courses"
-          className="p-2 bg-[#1e293b]/50 hover:bg-[#1e293b] border border-slate-700/50 rounded-lg text-slate-400 hover:text-white transition-colors"
+          className="p-2 bg-slate-100/70 hover:bg-slate-200 dark:bg-[#1e293b]/50 dark:hover:bg-[#1e293b] border border-slate-300 dark:border-slate-700/50 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Create Course</h1>
-          <p className="text-slate-400">Add a new course to manage modules and batches</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Create Course</h1>
+          <p className="text-slate-500 dark:text-slate-400">Add a new course to manage modules and batches</p>
         </div>
       </div>
 
-      <div className="bg-[#1e293b]/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
+      <div className="bg-slate-100/70 dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-300 dark:border-slate-700/50 rounded-2xl p-6">
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-xl flex items-start gap-3">
+          <div className="mb-6 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 text-red-600 dark:text-red-500 px-4 py-3 rounded-xl flex items-start gap-3">
             <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -78,7 +78,7 @@ export default function CreateCoursePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="title" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 Course Title *
               </label>
               <input
@@ -87,13 +87,13 @@ export default function CreateCoursePage() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-[#0f172a]/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
+                className="w-full bg-white dark:bg-[#0f172a]/50 border border-slate-300 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
                 placeholder="e.g., Class 10 Mathematics"
               />
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="description" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 Description
               </label>
               <textarea
@@ -101,16 +101,16 @@ export default function CreateCoursePage() {
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-[#0f172a]/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all resize-none"
+                className="w-full bg-white dark:bg-[#0f172a]/50 border border-slate-300 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all resize-none"
                 placeholder="Optional description of the course..."
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-slate-700/50">
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-300 dark:border-slate-700/50">
             <Link
               href="/admin/courses"
-              className="px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
+              className="px-6 py-2.5 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
             >
               Cancel
             </Link>

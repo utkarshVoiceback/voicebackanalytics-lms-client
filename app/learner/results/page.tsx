@@ -87,14 +87,14 @@ export default function ResultsPage() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-tight">Results</h1>
-          <p className="text-slate-400 mt-1">View your assessment scores and performance across all training modules.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Results</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">View your assessment scores and performance across all training modules.</p>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-            <p className="text-slate-400 mb-4">{error}</p>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+            <p className="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
             <button
               onClick={fetchResults}
               className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
@@ -106,14 +106,14 @@ export default function ResultsPage() {
 
         {/* Empty State */}
         {!error && completedItems.length === 0 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-white mb-2">No Results Yet</h2>
-            <p className="text-slate-400">Complete assessments to see your results here.</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Results Yet</h2>
+            <p className="text-slate-500 dark:text-slate-400">Complete assessments to see your results here.</p>
           </div>
         )}
 
@@ -122,70 +122,70 @@ export default function ResultsPage() {
           <>
             {/* Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Overall Average</p>
-                <p className="text-2xl font-bold text-white">{overallAverage !== null ? overallAverage.toFixed(1) : "—"}%</p>
-                <p className="text-xs text-slate-500 mt-1">Performance</p>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Overall Average</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{overallAverage !== null ? overallAverage.toFixed(1) : "—"}%</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Performance</p>
               </div>
-              <div className="bg-emerald-950/30 border border-emerald-900/50 rounded-xl p-5">
-                <p className="text-xs font-medium text-emerald-500/70 uppercase tracking-wider mb-1">Assessments</p>
-                <p className="text-2xl font-bold text-emerald-400">{completedItems.length}</p>
-                <p className="text-xs text-emerald-500/70 mt-1">Completed</p>
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl p-5">
+                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-500/70 uppercase tracking-wider mb-1">Assessments</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{completedItems.length}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-500/70 mt-1">Completed</p>
               </div>
-              <div className="bg-blue-950/30 border border-blue-900/50 rounded-xl p-5">
-                <p className="text-xs font-medium text-blue-500/70 uppercase tracking-wider mb-1">Total Marks</p>
-                <p className="text-2xl font-bold text-blue-400">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl p-5">
+                <p className="text-xs font-medium text-blue-600 dark:text-blue-500/70 uppercase tracking-wider mb-1">Total Marks</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {totalObtained}/{totalPossible}
                 </p>
-                <p className="text-xs text-blue-500/70 mt-1">Obtained</p>
+                <p className="text-xs text-blue-600 dark:text-blue-500/70 mt-1">Obtained</p>
               </div>
-              <div className="bg-amber-950/30 border border-amber-900/50 rounded-xl p-5">
-                <p className="text-xs font-medium text-amber-500/70 uppercase tracking-wider mb-1">Best Score</p>
-                <p className="text-2xl font-bold text-amber-400">{bestScore !== null ? bestScore.toFixed(1) : "—"}%</p>
-                <p className="text-xs text-amber-500/70 mt-1">Highest</p>
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl p-5">
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-500/70 uppercase tracking-wider mb-1">Best Score</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{bestScore !== null ? bestScore.toFixed(1) : "—"}%</p>
+                <p className="text-xs text-amber-600 dark:text-amber-500/70 mt-1">Highest</p>
               </div>
             </div>
 
             {/* Results Table (Desktop) */}
-            <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="hidden md:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800">
-                    <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">#</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Module</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Marks</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Percentage</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Date</th>
-                    <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Action</th>
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    <th className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">#</th>
+                    <th className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Module</th>
+                    <th className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Marks</th>
+                    <th className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Percentage</th>
+                    <th className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Date</th>
+                    <th className="text-right text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {sortedResults.map((item) => (
-                    <tr key={item.moduleId} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 text-sm text-slate-500 font-mono">{item.moduleSequence}</td>
+                    <tr key={item.moduleId} className="hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-400 dark:text-slate-500 font-mono">{item.moduleSequence}</td>
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-white">{item.moduleTitle}</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{item.moduleTitle}</p>
                       </td>
                       <td className="px-6 py-4">
                         {item.latestAttempt ? (
-                          <p className="text-sm font-bold text-emerald-400">
+                          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                             {item.latestAttempt.obtainedMarks}/{item.latestAttempt.totalMarks}
                           </p>
                         ) : (
-                          <span className="text-sm text-slate-600">—</span>
+                          <span className="text-sm text-slate-300 dark:text-slate-600">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         {item.latestAttempt ? (
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
                             {item.latestAttempt.percentage.toFixed(1)}%
                           </p>
                         ) : (
-                          <span className="text-sm text-slate-600">—</span>
+                          <span className="text-sm text-slate-300 dark:text-slate-600">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-slate-400">
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
                           {item.latestAttempt
                             ? new Date(item.latestAttempt.submittedAt).toLocaleDateString()
                             : "—"}
@@ -194,7 +194,7 @@ export default function ResultsPage() {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => setSelectedResult(item)}
-                          className="rounded-lg bg-emerald-700/30 hover:bg-emerald-700/50 border border-emerald-700/50 px-4 py-2 text-sm font-semibold text-emerald-300 transition-colors whitespace-nowrap"
+                          className="rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 dark:bg-emerald-700/30 dark:hover:bg-emerald-700/50 dark:border-emerald-700/50 dark:text-emerald-300 px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
                         >
                           View Result
                         </button>
@@ -208,13 +208,13 @@ export default function ResultsPage() {
             {/* Results Cards (Mobile) */}
             <div className="md:hidden space-y-4">
               {sortedResults.map((item) => (
-                <div key={item.moduleId} className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <div key={item.moduleId} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-slate-500 font-mono">#{item.moduleSequence}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">#{item.moduleSequence}</span>
                       </div>
-                      <h3 className="text-sm font-semibold text-white">{item.moduleTitle}</h3>
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{item.moduleTitle}</h3>
                     </div>
                   </div>
 
@@ -222,10 +222,10 @@ export default function ResultsPage() {
                     <div className="flex items-center gap-3 text-sm">
                       {item.latestAttempt && (
                         <>
-                          <span className="text-slate-400">
+                          <span className="text-slate-500 dark:text-slate-400">
                             {item.latestAttempt.obtainedMarks}/{item.latestAttempt.totalMarks} marks
                           </span>
-                          <span className="font-bold text-emerald-400">
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
                             {item.latestAttempt.percentage.toFixed(1)}%
                           </span>
                         </>
@@ -234,14 +234,14 @@ export default function ResultsPage() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
                       {item.latestAttempt
                         ? new Date(item.latestAttempt.submittedAt).toLocaleDateString()
                         : "—"}
                     </span>
                     <button
                       onClick={() => setSelectedResult(item)}
-                      className="rounded-lg bg-emerald-700/30 hover:bg-emerald-700/50 border border-emerald-700/50 px-4 py-2 text-sm font-semibold text-emerald-300 transition-colors whitespace-nowrap"
+                      className="rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 dark:bg-emerald-700/30 dark:hover:bg-emerald-700/50 dark:border-emerald-700/50 dark:text-emerald-300 px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
                     >
                       View Result
                     </button>
@@ -260,12 +260,12 @@ export default function ResultsPage() {
           onClick={() => setSelectedResult(null)}
         >
           <div
-            className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-xl"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-white mb-2">{selectedResult.moduleTitle}</h2>
-              <p className="text-xs text-slate-500">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{selectedResult.moduleTitle}</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
                 Module {selectedResult.moduleSequence}
               </p>
             </div>
@@ -273,23 +273,23 @@ export default function ResultsPage() {
             {selectedResult.latestAttempt && (
               <>
                 <div className="space-y-4 mb-6">
-                  <div className="bg-slate-800 rounded-lg p-4">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Marks Obtained</p>
-                    <p className="text-2xl font-bold text-emerald-400">
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                    <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Marks Obtained</p>
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                       {selectedResult.latestAttempt.obtainedMarks}/{selectedResult.latestAttempt.totalMarks}
                     </p>
                   </div>
 
-                  <div className="bg-slate-800 rounded-lg p-4">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Percentage</p>
-                    <p className="text-2xl font-bold text-white">
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                    <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Percentage</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
                       {selectedResult.latestAttempt.percentage.toFixed(1)}%
                     </p>
                   </div>
 
-                  <div className="bg-slate-800 rounded-lg p-4">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Date Submitted</p>
-                    <p className="text-sm text-slate-300">
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                    <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Date Submitted</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
                       {new Date(selectedResult.latestAttempt.submittedAt).toLocaleString()}
                     </p>
                   </div>
@@ -320,7 +320,7 @@ export default function ResultsPage() {
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
                           {selectedResult.latestAttempt.percentage.toFixed(0)}%
                         </p>
                       </div>
@@ -333,7 +333,7 @@ export default function ResultsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedResult(null)}
-                className="flex-1 rounded-lg bg-slate-800 hover:bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 transition-colors"
+                className="flex-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors"
               >
                 Close
               </button>

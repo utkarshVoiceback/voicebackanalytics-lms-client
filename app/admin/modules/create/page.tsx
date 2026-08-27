@@ -63,28 +63,28 @@ function CreateModuleForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-4"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
             </svg>
             Back to Modules
           </button>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Create Module</h1>
-          <p className="text-slate-400 mt-1">Add a new learning module to a course</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Create Module</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Add a new learning module to a course</p>
         </div>
 
         {/* Form */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8">
           {error && (
-            <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
-              <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-500/10 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+              <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
               <span>{error}</span>
@@ -93,14 +93,14 @@ function CreateModuleForm() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                course <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                course <span className="text-red-600 dark:text-red-400">*</span>
               </label>
               <select
                 value={courseId}
                 onChange={(e) => setcourseId(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
                 <option value="">-- Select a course --</option>
                 {courses.map((course) => (
@@ -112,34 +112,34 @@ function CreateModuleForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Module Title <span className="text-red-400">*</span>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                Module Title <span className="text-red-600 dark:text-red-400">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 placeholder="e.g. Introduction to Passenger Services"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
                 placeholder="Brief description of this module"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Sequence Order <span className="text-red-400">*</span>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                  Sequence Order <span className="text-red-600 dark:text-red-400">*</span>
                 </label>
                 <input
                   type="number"
@@ -147,18 +147,18 @@ function CreateModuleForm() {
                   min={1}
                   value={sequenceOrder}
                   onChange={(e) => setSequenceOrder(Number(e.target.value))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Sequential Access</label>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Sequential Access</label>
                 <div className="flex items-center gap-3 mt-2">
                   <button
                     type="button"
                     onClick={() => setIsSequential(!isSequential)}
                     className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                      isSequential ? "bg-blue-600" : "bg-slate-700"
+                      isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"
                     }`}
                   >
                     <span
@@ -167,14 +167,14 @@ function CreateModuleForm() {
                       }`}
                     />
                   </button>
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
                     {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex items-center gap-4">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-4">
               <button
                 type="submit"
                 disabled={loading}
@@ -195,7 +195,7 @@ function CreateModuleForm() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="rounded-lg border border-slate-700 px-6 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+                className="rounded-lg border border-slate-300 dark:border-slate-700 px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>
@@ -210,7 +210,7 @@ function CreateModuleForm() {
 export default function CreateModulePage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
         <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
       </div>
     }>

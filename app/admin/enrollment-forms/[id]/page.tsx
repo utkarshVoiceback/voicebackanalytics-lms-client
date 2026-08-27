@@ -124,7 +124,7 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
     });
 
     if (res.success && res.data) {
-      const link = `${window.location.origin}/enroll/invite/${res.data.token}`;
+      const link = `${window.location.origin}/enroll/${res.data.batchId || id}`;
       dispatch(setGeneratedLink(link));
       setFormId(res.data.id);
     } else {
@@ -134,9 +134,10 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
   };
 
   const copyToClipboard = () => {
-    const link = `${window.location.origin}/enroll/${id}`;
-    navigator.clipboard.writeText(link);
-    alert("Enrollment link copied to clipboard!");
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      alert("Enrollment link copied to clipboard!");
+    }
   };
 
   if (!isAuthenticated || !user || user.role !== "ADMIN") {
@@ -160,18 +161,18 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <Link href="/admin/enrollment-forms" className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-2 inline-block">
+          <Link href="/admin/enrollment-forms" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
             ← Back to Enrollment Forms
           </Link>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Edit Batch</h1>
-          <p className="text-slate-400 mt-1">Update batch details and manage enrollments</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Edit Batch</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Update batch details and manage enrollments</p>
         </div>
       </div>
 
       {/* Errors */}
       {error && (
-        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
-          <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+          <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
           </svg>
           <span>{error}</span>
@@ -182,8 +183,8 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
         {/* Left Column: Edit Form */}
         <div className="lg:col-span-2">
           {updateError && (
-             <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-300">
-               <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+             <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+               <svg className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                </svg>
                <span>{updateError}</span>
@@ -191,10 +192,10 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
           )}
 
           {activeBatch && (
-            <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
               <div>
-                <label htmlFor="batchTitle" className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Batch Title <span className="text-red-400">*</span>
+                <label htmlFor="batchTitle" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                  Batch Title <span className="text-red-600 dark:text-red-400">*</span>
                 </label>
                 <input
                   id="batchTitle"
@@ -202,14 +203,14 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                   required
                   value={batchTitle}
                   onChange={(e) => setBatchTitle(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-                    Start Date <span className="text-red-400">*</span>
+                  <label htmlFor="startDate" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    Start Date <span className="text-red-600 dark:text-red-400">*</span>
                   </label>
                   <input
                     id="startDate"
@@ -217,12 +218,12 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                     required
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-                    End Date <span className="text-red-400">*</span>
+                  <label htmlFor="endDate" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    End Date <span className="text-red-600 dark:text-red-400">*</span>
                   </label>
                   <input
                     id="endDate"
@@ -230,15 +231,15 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                     required
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="enrollmentDate" className="block text-sm font-medium text-slate-300 mb-1.5">
-                    Enrollment Date <span className="text-red-400">*</span>
+                  <label htmlFor="enrollmentDate" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    Enrollment Date <span className="text-red-600 dark:text-red-400">*</span>
                   </label>
                   <input
                     id="enrollmentDate"
@@ -246,19 +247,19 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                     required
                     value={enrollmentDate}
                     onChange={(e) => setEnrollmentDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-slate-300 mb-1.5">
-                    Status <span className="text-red-400">*</span>
+                  <label htmlFor="status" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    Status <span className="text-red-600 dark:text-red-400">*</span>
                   </label>
                   <select
                     id="status"
                     required
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
@@ -286,7 +287,7 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                 </button>
                 <Link
                   href="/admin/enrollment-forms"
-                  className="px-6 py-2.5 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
+                  className="px-6 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </Link>
@@ -297,19 +298,19 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
 
         {/* Right Column: Actions / Enrollment Link */}
         <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Enrollment Link</h3>
-            <p className="text-sm text-slate-400 mb-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Enrollment Link</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               Share this link with learners to enroll directly into this batch.
             </p>
-            
+
             <div className="space-y-4">
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 break-all text-sm text-emerald-400 font-mono">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 break-all text-sm text-emerald-600 dark:text-emerald-400 font-mono">
                 {`${window.location.origin}/enroll/${id}`}
               </div>
               <button
                 onClick={copyToClipboard}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
@@ -319,10 +320,10 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">Enrolled Students</h3>
-              <span className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2 py-1 rounded-full">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Enrolled Students</h3>
+              <span className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-xs font-bold px-2 py-1 rounded-full">
                 Total: {enrolledStudents.length}
               </span>
             </div>
@@ -335,11 +336,11 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                  </svg>
                </div>
             ) : enrolledStudents.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-4">No students enrolled yet.</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">No students enrolled yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-slate-400">
-                  <thead className="text-xs text-slate-500 uppercase bg-slate-950/50">
+                <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
+                  <thead className="text-xs text-slate-400 dark:text-slate-500 uppercase bg-slate-100 dark:bg-slate-950/50">
                     <tr>
                       <th scope="col" className="px-4 py-3 rounded-l-lg">Name</th>
                       <th scope="col" className="px-4 py-3">Email</th>
@@ -348,8 +349,8 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                   </thead>
                   <tbody>
                     {enrolledStudents.map((student) => (
-                      <tr key={student.id} className="border-b border-slate-800/50 hover:bg-slate-800/20">
-                        <td className="px-4 py-3 font-medium text-white">{student.fullName}</td>
+                      <tr key={student.id} className="border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/20">
+                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{student.fullName}</td>
                         <td className="px-4 py-3">{student.email}</td>
                         <td className="px-4 py-3">{student.mobile || '-'}</td>
                       </tr>
