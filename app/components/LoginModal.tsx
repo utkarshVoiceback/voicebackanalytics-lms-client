@@ -46,6 +46,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       
       if (role === "ADMIN") {
         router.push("/admin/dashboard");
+      } else if (role === "INSTRUCTOR") {
+        router.push("/instructor/dashboard");
       } else if (role === "LEARNER") {
         router.push("/learner/dashboard");
       } else {
