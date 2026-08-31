@@ -8,7 +8,6 @@ import { apiFetch } from "@/lib/api";
 
 export default function CreateBatchPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
@@ -22,13 +21,6 @@ export default function CreateBatchPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch("/courses").then((res) => {
-      if (res.success && res.data) {
-        dispatch(require("@/store/courseSlice").setCourses(res.data));
-      }
-    });
-  }, []);
-
     if (!isAuthenticated) {
       router.push("/login");
     } else if (user?.role !== "ADMIN") {

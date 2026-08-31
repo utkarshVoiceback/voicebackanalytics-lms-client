@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
 import { useAppSelector } from "@/store";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
 
@@ -47,18 +47,28 @@ interface Assessment {
 }
 
 export default function AdminLearnerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
   const { id } = use(params);
-
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  
   const [learner, setLearner] = useState<Learner | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (isAuthenticated && (user?.role === "ADMIN" || user?.role === "INSTRUCTOR") && id) {
       fetchLearnerDetails();
     }
-  }, [id]);
+  }, [isAuthenticated, user, id]);
 
   const [resume, setResume] = useState<any | null>(null);
 
@@ -102,6 +112,14 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
     const completed = assessments.filter((a) => a.assessmentStatus === "COMPLETED").length;
     return Math.round((completed / assessments.length) * 100);
   };
+
+  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -293,11 +311,17 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
                       onClick={() => {
                         const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
                         const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
-                        window.open(`${API_BASE_URL}${urlBase}/${learner.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`, "_blank");
+                        const url = `${API_BASE_URL}${urlBase}/${learner.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = resume.fileName || "resume";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
                       }}
                       className="w-full inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800/30"
                     >
-                      View Document
+                      Download Resume
                     </button>
                     
                     {user?.role === "ADMIN" && (resume.status === "UPLOADED" || resume.status === "EDITED") && (

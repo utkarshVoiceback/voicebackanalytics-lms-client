@@ -30,20 +30,15 @@ export default function LoginPage() {
         dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
         const role = res.data.user.role;
 
-        if (role === "ADMIN" || role === "INSTRUCTOR") {
+        if (role === "ADMIN") {
           router.push("/admin/dashboard");
-        } else {
+        } else if (role === "INSTRUCTOR") {
+          router.push("/instructor/dashboard");
+        } else if (role === "LEARNER") {
           router.push("/learner/dashboard");
+        } else {
+          dispatch(setAuthError(res.message || "Login failed"));
         }
-    if (res.success && res.data) {
-      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      const role = res.data.user.role;
-      if (role === "ADMIN") {
-        router.push("/admin/dashboard");
-      } else if (role === "INSTRUCTOR") {
-        router.push("/instructor/dashboard");
-      } else if (role === "LEARNER") {
-        router.push("/learner/dashboard");
       } else {
         dispatch(setAuthError(res.message || "Login failed"));
       }

@@ -49,24 +49,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       if (res.success && res.data) {
         localStorage.setItem("lms_auth_token", res.data.token);
         dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
+        const role = res.data.user.role;
         onClose();
-        
-        if (res.data.user.role === "ADMIN") {
-          router.push("/admin");
-        } else {
-          router.push("/learner");
+
+        if (role === "ADMIN") {
+          router.push("/admin/dashboard");
+        } else if (role === "INSTRUCTOR") {
+          router.push("/instructor/dashboard");
+        } else if (role === "LEARNER") {
+          router.push("/learner/dashboard");
         }
-    if (res.success && res.data) {
-      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      const role = res.data.user.role;
-      onClose(); // close modal on successful login
-      
-      if (role === "ADMIN") {
-        router.push("/admin/dashboard");
-      } else if (role === "INSTRUCTOR") {
-        router.push("/instructor/dashboard");
-      } else if (role === "LEARNER") {
-        router.push("/learner/dashboard");
       } else {
         dispatch(setAuthError(res.message || "Login failed"));
       }

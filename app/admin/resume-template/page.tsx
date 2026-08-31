@@ -116,10 +116,13 @@ export default function ResumeTemplatePage() {
       typeof window !== "undefined"
         ? localStorage.getItem("lms_auth_token")
         : null;
-    window.open(
-      `${API_BASE_URL}/resume-template/download${token ? `?token=${encodeURIComponent(token)}` : ""}`,
-      "_blank"
-    );
+    const url = `${API_BASE_URL}/resume-template/download${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Resume_Template.docx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   if (!isAuthenticated || !user || user.role !== "ADMIN") {

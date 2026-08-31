@@ -225,11 +225,16 @@ export default function InstructorLearnersPage() {
                             onClick={() => {
                               const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
                               const url = `${API_BASE_URL}/resumes/instructor/${learner.learnerProfileId}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-                              window.open(url, "_blank");
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = learner.fullName || "resume";
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
                             }}
                             className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                           >
-                            Open File
+                            Download
                           </button>
                         )}
                       </div>

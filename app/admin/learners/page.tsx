@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
-import { exportLearnersToExcel } from "@/lib/excel-export";
 import { useAppSelector } from "@/store";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
+import { exportLearnersToExcel } from "@/lib/excel-export";
 
 interface Learner {
   id: string;
@@ -25,7 +24,6 @@ interface Learner {
 }
 
 export default function AdminLearnersPage() {
-  const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [downloading, setDownloading] = useState(false);
 
@@ -76,11 +74,6 @@ export default function AdminLearnersPage() {
     new Set(learners.map((l) => l.batch.batchTitle)),
   ).sort();
 
-  // const filteredLearners = learners.filter((l) =>
-  //   l.user.fullName.toLowerCase().includes(search.toLowerCase()) ||
-  //   l.user.email.toLowerCase().includes(search.toLowerCase()) ||
-  //   l.batch.batchTitle.toLowerCase().includes(search.toLowerCase())
-  // );
   const filteredLearners = learners.filter((l) => {
     const matchesSearch =
       l.user.fullName.toLowerCase().includes(search.toLowerCase()) ||
@@ -99,17 +92,45 @@ export default function AdminLearnersPage() {
   const handleDownloadZip = async () => {
     try {
       setDownloading(true);
+      setError(null);
       const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
+
       let url = "/resumes/admin/download-zip?";
       if (selectedBatch !== "ALL") {
-        url += `batchId=${encodeURIComponent(learners.find(l => l.batch.batchTitle === selectedBatch)?.batchId || "")}&`;
+        const batchId = learners.find(l => l.batch.batchTitle === selectedBatch)?.batchId;
+        if (batchId) {
+          url += `batchId=${encodeURIComponent(batchId)}&`;
+        }
       }
       if (search) {
         url += `search=${encodeURIComponent(search)}&`;
       }
-      
-      const fullUrl = `${API_BASE_URL}${url}token=${token || ""}`;
-      window.open(fullUrl, "_blank");
+      url += `token=${encodeURIComponent(token || "")}`;
+
+      const response = await fetch(`${API_BASE_URL}${url}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      if (blob.type !== "application/zip" && blob.type !== "application/octet-stream") {
+        const text = await blob.text();
+        throw new Error(`Invalid response: ${text || "expected ZIP file"}`);
+      }
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `approved-resumes-${new Date().toISOString().split("T")[0]}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      setError(err.message || "Failed to download resumes");
+      console.error("Download error:", err);
     } finally {
       setDownloading(false);
     }
@@ -200,7 +221,7 @@ export default function AdminLearnersPage() {
         <div className="flex-grow"></div>
 
         {/* Download Approved Resumes ZIP */}
-        {user?.role === "ADMIN" && (
+        {/* {user?.role === "ADMIN" && (
           <button
             onClick={handleDownloadZip}
             disabled={downloading}
@@ -211,7 +232,7 @@ export default function AdminLearnersPage() {
             </svg>
             {downloading ? "Preparing ZIP..." : "Download Resumes ZIP"}
           </button>
-        )}
+        )} */}
       </div>
 
       {error && (
@@ -303,11 +324,16 @@ export default function AdminLearnersPage() {
                               const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
                               const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
                               const url = `${API_BASE_URL}${urlBase}/${l.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-                              window.open(url, "_blank");
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = l.user?.fullName || "resume";
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
                             }}
                             className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                           >
-                            Open File
+                            Download
                           </button>
                         )}
                       </div>

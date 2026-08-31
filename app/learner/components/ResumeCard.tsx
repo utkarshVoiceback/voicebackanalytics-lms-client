@@ -97,7 +97,12 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
     const url = token
       ? `${API_BASE_URL}/resumes/my/file?token=${encodeURIComponent(token)}`
       : `${API_BASE_URL}/resumes/my/file`;
-    window.open(url, "_blank");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = resume?.fileName || "resume";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleDownloadTemplate = () => {
