@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
 import { useAppSelector } from "@/store";
-import { apiFetch, API_BASE_URL } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 interface Learner {
   id: string;
@@ -46,21 +46,29 @@ interface Assessment {
   } | null;
 }
 
-export default function AdminLearnerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default function InstructorLearnerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
   const { id } = use(params);
-
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  
   const [learner, setLearner] = useState<Learner | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (isAuthenticated && (user?.role === "ADMIN" || user?.role === "INSTRUCTOR") && id) {
       fetchLearnerDetails();
     }
-  }, [id]);
-
-  const [resume, setResume] = useState<any | null>(null);
+  }, [isAuthenticated, user, id]);
 
   const fetchLearnerDetails = async () => {
     setLoading(true);
@@ -73,16 +81,6 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
 
       if (learnerRes.success && learnerRes.data) {
         setLearner(learnerRes.data);
-        
-        // Fetch resume based on profile ID
-        const profileId = learnerRes.data.id;
-        if (profileId) {
-          const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
-          const resumeRes = await apiFetch(`${urlBase}/all?search=${encodeURIComponent(learnerRes.data.user.email)}`);
-          if (resumeRes.success && resumeRes.data && resumeRes.data.length > 0) {
-            setResume(resumeRes.data[0].resume); // Extract nested resume object
-          }
-        }
       } else {
         setError(learnerRes.message || "Failed to fetch learner details");
       }
@@ -103,6 +101,14 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
     return Math.round((completed / assessments.length) * 100);
   };
 
+  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -116,7 +122,7 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Learner Not Found</h2>
         <p className="text-slate-500 dark:text-slate-400 mb-6">{error}</p>
-        <Link href="/admin/learners" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+        <Link href="/instructor/learners" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
           ← Back to Learners
         </Link>
       </div>
@@ -129,7 +135,7 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/admin/learners" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
+        <Link href="/instructor/learners" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
           ← Back to Learners
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
@@ -264,68 +270,6 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Resume</h3>
-            
-            {resume ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Status</span>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                    resume.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700' :
-                    resume.status === 'EDITED' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' :
-                    'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'
-                  }`}>
-                    {resume.status.replace("_", " ")}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate mb-2">
-                    {resume.fileName}
-                  </p>
-                  <p className="text-xs text-slate-500 mb-4">
-                    Uploaded: {new Date(resume.uploadedAt).toLocaleDateString()}
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => {
-                        const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
-                        const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
-                        window.open(`${API_BASE_URL}${urlBase}/${learner.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`, "_blank");
-                      }}
-                      className="w-full inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800/30"
-                    >
-                      View Document
-                    </button>
-                    
-                    {user?.role === "ADMIN" && (resume.status === "UPLOADED" || resume.status === "EDITED") && (
-                      <button
-                        onClick={async () => {
-                          const res = await apiFetch(`/resumes/admin/${learner.id}/approve`, { method: "POST" });
-                          if (res.success) {
-                            setResume({ ...resume, status: "APPROVED", approvedAt: new Date().toISOString() });
-                          }
-                        }}
-                        className="w-full inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                        </svg>
-                        Approve Resume
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  This learner has not uploaded a resume yet.
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">

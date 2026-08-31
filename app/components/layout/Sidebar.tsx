@@ -354,6 +354,12 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
       ],
     },
     {
+      title: "INSTRUCTOR MANAGEMENT",
+      items: [
+        { href: "/admin/instructors", label: "Instructors", icon: icons.profile },
+      ],
+    },
+    {
       title: "ENROLLMENT / MANAGEMENT",
       items: [
         // { href: "/admin/courses", label: "Courses", icon: icons.modules },
@@ -365,6 +371,12 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
         //   label: "Assessment",
         //   icon: icons.assessments,
         // },
+      ],
+    },
+    {
+      title: "SYSTEM SETTINGS",
+      items: [
+        { href: "/admin/resume-template", label: "Resume Template", icon: icons.settings },
       ],
     },
     // {
@@ -387,7 +399,35 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
   ],
 };
 
-// ─── Learner nav ──────────────────────────────────────────────────────────────
+// ✨ Instructor nav ✨
+const instructorNav: { main: NavItem[]; sections: NavSection[] } = {
+  main: [
+    {
+      href: "/instructor/dashboard",
+      label: "Dashboard",
+      icon: icons.dashboard,
+      exact: true,
+    },
+  ],
+  sections: [
+    {
+      title: "TRAINING",
+      items: [
+        { href: "/instructor/batches", label: "My Batches", icon: icons.batches },
+        { href: "/instructor/modules", label: "My Modules", icon: icons.modules },
+        { href: "/instructor/learners", label: "Learners", icon: icons.learners },
+      ],
+    },
+    {
+      title: "ACCOUNT",
+      items: [
+        { href: "/instructor/profile", label: "Profile", icon: icons.profile },
+      ],
+    },
+  ],
+};
+
+// ✨ Learner nav ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
 const learnerNav: { main: NavItem[]; sections: NavSection[] } = {
   main: [
     {
@@ -476,7 +516,7 @@ export default function Sidebar({ role }: SidebarProps) {
     router.push("/login");
   };
 
-  const nav = role === "ADMIN" || role === "INSTRUCTOR" ? adminNav : learnerNav;
+  const nav = role === "ADMIN" ? adminNav : role === "INSTRUCTOR" ? instructorNav : learnerNav;
 
   // Initials for avatar
   const initials = user?.fullName

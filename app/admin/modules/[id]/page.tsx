@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
 import { useAppDispatch } from "@/store";
 import { setCurrentModule, updateModuleInList } from "@/store/moduleSlice";
+import { DependencySelector } from "../components/DependencySelector";
 
 interface ModuleContent {
   id: string;
@@ -36,7 +37,7 @@ interface QuestionData {
 
 interface ModuleData {
   id: string;
-  batchId: string;
+  courseId: string;
   title: string;
   description: string | null;
   sequenceOrder: number;
@@ -45,6 +46,7 @@ interface ModuleData {
   contents: ModuleContent[];
   questions?: QuestionData[];
   batch?: { id: string; batchTitle: string };
+  course?: { id: string; title: string };
 }
 
 export default function ModuleDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -63,6 +65,8 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
   const [editSequence, setEditSequence] = useState(1);
   const [editIsSequential, setEditIsSequential] = useState(true);
   const [editStatus, setEditStatus] = useState("ACTIVE");
+  const [editHasDependency, setEditHasDependency] = useState(false);
+  const [editDependencyIds, setEditDependencyIds] = useState<string[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
 
   // Add content state
@@ -109,6 +113,13 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
       setEditSequence(res.data.sequenceOrder);
       setEditIsSequential(res.data.isSequential);
       setEditStatus(res.data.status);
+      // Load existing dependencies
+      const depRes = await apiFetch(`/modules/${id}/dependencies`);
+      if (depRes.success && depRes.data) {
+        const ids = depRes.data.dependencies.map((d: any) => d.dependencyModuleId);
+        setEditDependencyIds(ids);
+        setEditHasDependency(depRes.data.hasDependency);
+      }
     } else {
       setError(res.message || "Module not found");
     }
@@ -133,6 +144,8 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
         sequenceOrder: editSequence,
         isSequential: editIsSequential,
         status: editStatus,
+        hasDependency: editHasDependency,
+        dependencyModuleIds: editHasDependency ? editDependencyIds : [],
       }),
     });
     if (res.success && res.data) {
@@ -408,6 +421,41 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
                   </select>
                 </div>
               </div>
+
+              {/* ── Dependency Section ──────────────────────────────────────────── */}
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-5 mt-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                      Prerequisite Dependencies
+                    </label>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                      Learners must complete all selected modules before starting this one.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditHasDependency(!editHasDependency);
+                      if (editHasDependency) setEditDependencyIds([]);
+                    }}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${editHasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${editHasDependency ? "translate-x-6" : "translate-x-1"}`} />
+                  </button>
+                </div>
+
+                {editHasDependency && module.courseId && (
+                  <DependencySelector
+                    courseId={module.courseId}
+                    currentModuleId={module.id}
+                    selectedIds={editDependencyIds}
+                    onChange={setEditDependencyIds}
+                  />
+                )}
+              </div>
+              {/* ─────────────────────────────────────────────────────────────────── */}
+
               <div className="flex items-center gap-3 pt-2">
                 <button type="submit" disabled={saveLoading}
                   className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors">

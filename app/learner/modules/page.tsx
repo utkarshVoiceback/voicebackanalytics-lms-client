@@ -26,6 +26,12 @@ interface ModuleWithProgress {
   contents: ModuleContent[];
   progress: ModuleProgress | null;
   isLocked?: boolean;
+  lockedReason?: string;
+  dependency?: {
+    hasDependency: boolean;
+    isUnlocked: boolean;
+    dependencies: { moduleId: string; title: string; completed: boolean }[];
+  };
 }
 
 export default function MyModulesPage() {
@@ -62,7 +68,6 @@ export default function MyModulesPage() {
         }
       }
 
-      // Determine locking: sequential modules are locked if previous not completed
       const sortedMods = [...modulesRes.data].sort(
         (a: any, b: any) => a.sequenceOrder - b.sequenceOrder
       );
@@ -70,23 +75,28 @@ export default function MyModulesPage() {
       const merged: ModuleWithProgress[] = sortedMods.map((mod: any, index: number) => {
         const progress = progressMap[mod.id] || null;
 
-        // A sequential module is locked if the previous sequential module is not completed
         let isLocked = false;
-        if (mod.isSequential && index > 0) {
-          // Find the most recent module with a lower sequenceOrder that is sequential
-          const prevMod = sortedMods
-            .slice(0, index)
-            .reverse()
-            .find((m: any) => m.isSequential);
+        let lockedReason = "";
+
+        // 1. Check custom dependencies
+        if (mod.dependency?.hasDependency && !mod.dependency?.isUnlocked) {
+          isLocked = true;
+          const remaining = mod.dependency.dependencies.filter((d: any) => !d.completed).map((d: any) => `"${d.title}"`).join(", ");
+          lockedReason = `Requires: ${remaining}`;
+        }
+        // 2. Check sequential access (only if not already locked by deps)
+        else if (mod.isSequential && index > 0) {
+          const prevMod = sortedMods.slice(0, index).reverse().find((m: any) => m.isSequential);
           if (prevMod) {
             const prevProgress = progressMap[prevMod.id];
             if (!prevProgress || prevProgress.status !== "COMPLETED") {
               isLocked = true;
+              lockedReason = "Complete the previous module first.";
             }
           }
         }
 
-        return { ...mod, progress, isLocked };
+        return { ...mod, progress, isLocked, lockedReason };
       });
 
       setModules(merged);
@@ -100,6 +110,7 @@ export default function MyModulesPage() {
     if (mod.isLocked) {
       return {
         label: "Locked",
+        subLabel: mod.lockedReason,
         badgeClass: "bg-slate-200 text-slate-500 border-slate-300 dark:bg-slate-700/60 dark:text-slate-400 dark:border-slate-600/40",
         cardClass: "border-slate-200 bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900/50 opacity-70",
         actionLabel: "Locked",
@@ -314,6 +325,17 @@ export default function MyModulesPage() {
 
                         {mod.description && (
                           <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">{mod.description}</p>
+                        )}
+
+                        {config.subLabel && (
+                          <div className="mb-3">
+                            <p className="text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-md inline-flex border border-amber-100 dark:border-amber-500/20">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              {config.subLabel}
+                            </p>
+                          </div>
                         )}
 
                         {/* Content type tags */}
