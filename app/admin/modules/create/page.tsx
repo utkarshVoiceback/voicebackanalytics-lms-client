@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addModule } from "@/store/moduleSlice";
 import { setCourses } from "@/store/courseSlice";
+import { DependencySelector } from "../components/DependencySelector";
 
 function CreateModuleForm() {
   const router = useRouter();
@@ -18,6 +19,8 @@ function CreateModuleForm() {
   const [description, setDescription] = useState("");
   const [sequenceOrder, setSequenceOrder] = useState<number>(1);
   const [isSequential, setIsSequential] = useState(true);
+  const [hasDependency, setHasDependency] = useState(false);
+  const [dependencyModuleIds, setDependencyModuleIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,8 +30,11 @@ function CreateModuleForm() {
 
   const fetchcourses = async () => {
     const res = await apiFetch("/courses");
-    if (res.success && res.data) {
+    if (res.success && res.data && res.data.length > 0) {
       dispatch(setCourses(res.data));
+      if (!courseId) {
+        setcourseId(res.data[0].id);
+      }
     }
   };
 
@@ -41,6 +47,11 @@ function CreateModuleForm() {
       return;
     }
 
+    if (hasDependency && dependencyModuleIds.length === 0) {
+      setError("Please select at least one prerequisite module, or disable the dependency toggle.");
+      return;
+    }
+
     setLoading(true);
     const res = await apiFetch("/modules", {
       method: "POST",
@@ -50,6 +61,8 @@ function CreateModuleForm() {
         description,
         sequenceOrder,
         isSequential,
+        hasDependency,
+        dependencyModuleIds: hasDependency ? dependencyModuleIds : [],
       }),
     });
 
@@ -92,21 +105,12 @@ function CreateModuleForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                course <span className="text-red-600 dark:text-red-400">*</span>
-              </label>
-              <select
-                value={courseId}
-                onChange={(e) => setcourseId(e.target.value)}
-                required
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-              >
+            {/* Course Selection (Hidden) */}
+            <div className="hidden">
+              <select value={courseId} onChange={(e) => setcourseId(e.target.value)}>
                 <option value="">-- Select a course --</option>
                 {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.title}
-                  </option>
+                  <option key={course.id} value={course.id}>{course.title}</option>
                 ))}
               </select>
             </div>
@@ -157,15 +161,9 @@ function CreateModuleForm() {
                   <button
                     type="button"
                     onClick={() => setIsSequential(!isSequential)}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                      isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"
-                    }`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
                   >
-                    <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                        isSequential ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isSequential ? "translate-x-6" : "translate-x-1"}`} />
                   </button>
                   <span className="text-sm text-slate-500 dark:text-slate-400">
                     {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
@@ -173,6 +171,39 @@ function CreateModuleForm() {
                 </div>
               </div>
             </div>
+
+            {/* ── Dependency Section ──────────────────────────────────────────── */}
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                    Prerequisite Dependencies
+                  </label>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                    Learners must complete all selected modules before starting this one.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHasDependency(!hasDependency);
+                    if (hasDependency) setDependencyModuleIds([]);
+                  }}
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${hasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${hasDependency ? "translate-x-6" : "translate-x-1"}`} />
+                </button>
+              </div>
+
+              {hasDependency && courseId && (
+                <DependencySelector
+                  courseId={courseId}
+                  selectedIds={dependencyModuleIds}
+                  onChange={setDependencyModuleIds}
+                />
+              )}
+            </div>
+            {/* ─────────────────────────────────────────────────────────────────── */}
 
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-4">
               <button
@@ -188,9 +219,7 @@ function CreateModuleForm() {
                     </svg>
                     Creating...
                   </>
-                ) : (
-                  "Create Module"
-                )}
+                ) : "Create Module"}
               </button>
               <button
                 type="button"

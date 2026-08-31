@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { apiFetch } from "@/lib/api";
 import { logout } from "@/store/authSlice";
+import LearnerResumeCard from "@/app/learner/components/ResumeCard";
 
 interface ProfileData {
   id: string;
@@ -41,10 +42,23 @@ export default function ProfilePage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [resume, setResume] = useState<any | null>(null);
+
+  const fetchResumeData = useCallback(async () => {
+    try {
+      const res = await apiFetch("/resumes/my");
+      if (res.success) {
+        setResume(res.data);
+      }
+    } catch (err) {
+      console.error("Failed to load resume");
+    }
+  }, []);
 
   useEffect(() => {
     fetchProfileData();
-  }, []);
+    fetchResumeData();
+  }, [fetchResumeData]);
 
   const fetchProfileData = async () => {
     setLoading(true);
@@ -223,6 +237,11 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+
+            {/* Resume Section */}
+            <div className="mb-6">
+              <LearnerResumeCard resume={resume} onResumeChange={fetchResumeData} />
+            </div>
 
             {/* Learning Progress Stats */}
             {stats && (
