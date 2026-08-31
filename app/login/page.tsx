@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.auth);
+  const { useCustomLogo, customLogoUrl } = useAppSelector((state) => state.appConfig);
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -18,40 +19,56 @@ export default function LoginPage() {
     dispatch(setAuthLoading(true));
     dispatch(setAuthError(null));
 
-    const res = await apiFetch("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (res.success && res.data) {
-      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      const role = res.data.user.role;
-      if (role === "ADMIN") {
-        router.push("/admin/dashboard");
-      } else if (role === "LEARNER") {
-        router.push("/learner/dashboard");
+      if (res.success && res.data) {
+        localStorage.setItem("lms_auth_token", res.data.token);
+        dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
+        const role = res.data.user.role;
+
+        if (role === "ADMIN" || role === "INSTRUCTOR") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/learner/dashboard");
+        }
       } else {
-        router.push("/");
+        dispatch(setAuthError(res.message || "Login failed"));
       }
-    } else {
-      dispatch(setAuthError(res.message || "Login failed"));
+    } catch (err: any) {
+      dispatch(setAuthError("An unexpected error occurred"));
+    } finally {
+      dispatch(setAuthLoading(false));
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-blue-950/20 p-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 relative overflow-hidden transition-colors">
+      <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-900/[0.04] bg-[size:20px_20px]" />
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl shadow-blue-900/5 p-8 transition-colors">
+          
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 dark:bg-blue-600/20 rounded-xl mb-4">
-              <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sign In</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Skilvo Learning Platform</p>
+            {useCustomLogo && customLogoUrl ? (
+              <div className="mb-4 flex justify-center">
+                <img src={customLogoUrl} alt="Logo" className="h-14 object-contain" />
+              </div>
+            ) : (
+              <>
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 dark:bg-blue-600/20 rounded-xl mb-4">
+                  <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                  </svg>
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sign In</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Skilvo Learning Platform</p>
+              </>
+            )}
           </div>
 
           {/* Error Alert */}

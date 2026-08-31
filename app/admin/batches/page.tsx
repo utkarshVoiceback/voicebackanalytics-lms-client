@@ -1,30 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setBatches, setBatchLoading, setBatchError } from "@/store/batchSlice";
 import { apiFetch } from "@/lib/api";
+import { exportBatchesToExcel } from "@/lib/excel-export";
 import type { Batch } from "@/store/batchSlice";
 
 export default function BatchListPage() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { batches, loading, error } = useAppSelector((state) => state.batch);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [lastSelectedBatchId, setLastSelectedBatchId] = useState<string | null>(null);
   const [batchFormMap, setBatchFormMap] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
 
   useEffect(() => {
     // Load last selected batch ID from localStorage
@@ -35,11 +25,9 @@ export default function BatchListPage() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
-      fetchBatches();
-      fetchEnrollmentForms();
-    }
-  }, [isAuthenticated, user]);
+    fetchBatches();
+    fetchEnrollmentForms();
+  }, []);
 
   const fetchBatches = async () => {
     dispatch(setBatchLoading(true));
@@ -78,14 +66,6 @@ export default function BatchListPage() {
     }
   };
 
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -95,6 +75,15 @@ export default function BatchListPage() {
           <p className="text-slate-500 dark:text-slate-400 mt-1">Create and manage training batches</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={() => exportBatchesToExcel(batches)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download Excel
+          </button>
           <Link
             href="/admin/batches/create"
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm"
@@ -225,22 +214,12 @@ export default function BatchListPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {batchFormMap[batch.id] ? (
-                        <Link
-                          href={`/admin/enrollments/upload?formId=${batchFormMap[batch.id]}&batchId=${batch.id}`}
-                          className="text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium transition-colors"
-                        >
-                          Go to Enrollment
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/admin/batches/${batch.id}`}
-                          className="text-slate-400 hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400 text-sm font-medium transition-colors"
-                          title="Generate the enrollment form first"
-                        >
-                          Generate Enrollment Form
-                        </Link>
-                      )}
+                      <Link
+                        href={`/admin/enrollments/upload${batchFormMap[batch.id] ? `?formId=${batchFormMap[batch.id]}&batchId=${batch.id}` : `?batchId=${batch.id}`}`}
+                        className="text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium transition-colors"
+                      >
+                        Go to Enrollment
+                      </Link>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link

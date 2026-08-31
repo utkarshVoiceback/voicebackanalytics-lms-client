@@ -12,7 +12,6 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { id } = use(params);
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { activeBatch, loading, error } = useAppSelector((state) => state.batch);
   const { generatedLink } = useAppSelector((state) => state.enrollment);
 
@@ -33,21 +32,13 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
   const [loadingStudents, setLoadingStudents] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN" && id) {
+    if (id) {
       fetchBatchDetails(id);
       fetchEnrolledStudents(id);
       dispatch(setGeneratedLink(null));
       fetchExistingEnrollmentForm(id);
     }
-  }, [isAuthenticated, user, id]);
+  }, [id]);
 
   const fetchEnrolledStudents = async (batchId: string) => {
     setLoadingStudents(true);
@@ -162,14 +153,6 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
       }
     }
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   if (loading && !activeBatch) {
     return (
@@ -383,7 +366,7 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                       </svg>
                       Copy Link
                     </button>
-                    {formId && (
+                    {/* {formId && (
                       <Link
                         href={`/admin/enrollments/upload?formId=${formId}&batchId=${id}`}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors"
@@ -393,7 +376,7 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                         </svg>
                         Bulk Upload
                       </Link>
-                    )}
+                    )} */}
                   </div>
                 </>
               ) : (

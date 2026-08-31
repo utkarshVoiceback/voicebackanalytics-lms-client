@@ -1,6 +1,7 @@
 "use client";
 
 import Sidebar from "@/app/components/layout/Sidebar";
+import RequireAuth from "@/app/components/auth/RequireAuth";
 import { useAppSelector } from "@/store";
 import type { SidebarRole } from "@/app/components/layout/Sidebar";
 
@@ -12,7 +13,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 gap-6">
       <Sidebar role={role} />
       <main className="flex-1 min-w-0 overflow-y-auto pr-6 py-6">
-        {children}
+        <RequireAuth allowedRoles={["ADMIN", "INSTRUCTOR"]}>
+          {children}
+        </RequireAuth>
       </main>
     </div>
   );

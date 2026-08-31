@@ -1,23 +1,24 @@
 "use client";
 
 import { useEffect, useState, FormEvent, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setUploadResults, setEnrollmentLoading, setEnrollmentError } from "@/store/enrollmentSlice";
 import { apiFetch } from "@/lib/api";
 
 function UploadContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { loading, error, uploadResults } = useAppSelector((state) => state.enrollment);
 
   const initialFormId = searchParams.get("formId") || "";
   const initialBatchId = searchParams.get("batchId") || "";
 
+  const [batches, setBatches] = useState<any[]>([]);
+  const [selectedBatchId, setSelectedBatchId] = useState(initialBatchId);
   const [formId, setFormId] = useState(initialFormId);
+  const [checkingForm, setCheckingForm] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   
   // New state for sending
@@ -25,17 +26,50 @@ function UploadContent() {
   const [sendResults, setSendResults] = useState<any>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
+    fetchBatches();
+  }, []);
+
+  useEffect(() => {
+    if (selectedBatchId) {
+      checkFormForBatch(selectedBatchId);
+    } else {
+      setFormId("");
     }
-  }, [isAuthenticated, user, router]);
+  }, [selectedBatchId]);
+
+  const fetchBatches = async () => {
+    const res = await apiFetch("/batches");
+    if (res.success && res.data) {
+      setBatches(res.data);
+    }
+  };
+
+  const checkFormForBatch = async (batchId: string) => {
+    if (batchId === initialBatchId && initialFormId) {
+      setFormId(initialFormId);
+      return;
+    }
+    setCheckingForm(true);
+    setFormId("");
+    try {
+      const res = await apiFetch(`/form-templates/batch/${batchId}`);
+      if (res.success && res.data) {
+        setFormId(res.data.id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setCheckingForm(false);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!selectedBatchId) {
+      dispatch(setEnrollmentError("Please select a Batch"));
+      return;
+    }
     if (!formId) {
-      dispatch(setEnrollmentError("Please provide an Enrollment Form ID"));
+      dispatch(setEnrollmentError("Please create a form for this batch first"));
       return;
     }
     if (!file) {
@@ -84,23 +118,28 @@ function UploadContent() {
     setSending(false);
   };
 
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Link href={initialBatchId ? `/admin/batches/${initialBatchId}` : "/admin/batches"} className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
-          ← Back to Batch
+        <Link href="/admin/batches" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
+          ← Back to Batch Management
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Bulk Upload Enrollments</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Upload an Excel file to parse, validate, and securely invite learners</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Bulk Upload Enrollments</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">For API integration, contact our support</p>
+          </div>
+          <Link
+            href="/admin/learners/upload"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33A3 3 0 0116.5 19.5H6.75Z" />
+            </svg>
+            Upload Learners
+          </Link>
+        </div>
       </div>
 
       {/* Errors */}
@@ -118,18 +157,80 @@ function UploadContent() {
         <div>
           <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
             <div>
-              <label htmlFor="formId" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                Enrollment Form ID <span className="text-red-600 dark:text-red-400">*</span>
-              </label>
-              <input
-                id="formId"
-                type="text"
-                required
-                value={formId}
-                onChange={(e) => setFormId(e.target.value)}
-                readOnly={!!initialFormId}
-                className={`w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors ${initialFormId ? 'opacity-70 cursor-not-allowed' : ''}`}
-              />
+              <div className="flex justify-between items-center mb-1.5">
+                <label htmlFor="batchSelect" className="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Select Batch <span className="text-red-600 dark:text-red-400">*</span>
+                </label>
+                {selectedBatchId && !checkingForm && (
+                  formId ? (
+                    <Link
+                      href={`/admin/batches/form-builder/edit?returnTo=/admin/enrollments/upload&batchId=${selectedBatchId}`}
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
+                    >
+                      ✎ Edit Form
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/admin/batches/form-builder/create?returnTo=/admin/enrollments/upload&batchId=${selectedBatchId}`}
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
+                    >
+                      + Add Form
+                    </Link>
+                  )
+                )}
+              </div>
+              <div className="flex gap-2">
+                <select
+                  id="batchSelect"
+                  required
+                  value={selectedBatchId}
+                  onChange={(e) => setSelectedBatchId(e.target.value)}
+                  disabled={!!initialBatchId}
+                  className={`flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors ${initialBatchId ? 'opacity-70 cursor-not-allowed' : ''}`}
+                >
+                  <option value="">Choose a batch...</option>
+                  {batches.map((b) => (
+                    <option key={b.id} value={b.id}>{b.batchTitle}</option>
+                  ))}
+                </select>
+
+                {formId && !checkingForm && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+                        const downloadUrl = `${apiBaseUrl}/form-templates/${formId}/download`;
+                        const response = await fetch(downloadUrl, {
+                          method: "GET",
+                          headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
+                        });
+                        if (!response.ok) throw new Error("Failed to download template");
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `form-template.xlsx`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                      } catch (err) {
+                        dispatch(setEnrollmentError("Failed to download template. Ensure the Form ID is correct."));
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap shadow-sm"
+                  >
+                    Download Template
+                  </button>
+                )}
+              </div>
+              {checkingForm && <p className="text-xs text-slate-500 mt-2">Checking for active form...</p>}
+              {!checkingForm && selectedBatchId && !formId && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  No form found for this batch. Please add a form first.
+                </p>
+              )}
             </div>
 
             <div>

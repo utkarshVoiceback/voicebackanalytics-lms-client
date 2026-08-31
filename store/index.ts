@@ -5,6 +5,7 @@ import batchReducer from "./batchSlice";
 import enrollmentReducer from "./enrollmentSlice";
 import moduleReducer from "./moduleSlice";
 import courseReducer from "./courseSlice";
+import appConfigReducer from "./appConfigSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     enrollment: enrollmentReducer,
     module: moduleReducer,
     course: courseReducer,
+    appConfig: appConfigReducer,
   },
 });
 

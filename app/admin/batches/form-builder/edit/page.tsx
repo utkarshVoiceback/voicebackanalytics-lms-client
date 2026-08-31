@@ -31,23 +31,28 @@ const STANDARD_FIELDS: FormField[] = [
   { key: "highestEducation", label: "Highest Education", type: "select", required: false, isStandard: true, options: ["High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "PhD", "Other"] },
 ];
 
-function CreateFormContent() {
+function EditFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
+  const batchId = searchParams.get("batchId");
 
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [selectedBatchId, setSelectedBatchId] = useState("");
+  const [selectedBatchId, setSelectedBatchId] = useState(batchId || "");
   const [formName, setFormName] = useState("");
   const [customFields, setCustomFields] = useState<FormField[]>([]);
   const [removedStandardFields, setRemovedStandardFields] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [templateId, setTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBatches();
-  }, []);
+    if (batchId) {
+      fetchTemplate(batchId);
+    }
+  }, [batchId]);
 
   const fetchBatches = async () => {
     setLoading(true);
@@ -63,6 +68,41 @@ function CreateFormContent() {
       setError("Failed to fetch batches: " + (err.message || "Network error"));
     }
     setLoading(false);
+  };
+
+  const fetchTemplate = async (bId: string) => {
+    try {
+      const res = await apiFetch(`/form-templates/batch/${bId}`);
+      if (res.success && res.data) {
+        setTemplateId(res.data.id);
+        setFormName(res.data.name);
+        
+        const fields: FormField[] = res.data.fields || [];
+        const custom: FormField[] = [];
+        const stdKeys = new Set(STANDARD_FIELDS.map(f => f.key));
+        const activeStdKeys = new Set<string>();
+
+        for (const f of fields) {
+          if (f.isStandard && stdKeys.has(f.key)) {
+            activeStdKeys.add(f.key);
+          } else {
+            custom.push(f);
+          }
+        }
+        
+        const removed = new Set<string>();
+        for (const std of STANDARD_FIELDS) {
+          if (!activeStdKeys.has(std.key)) {
+            removed.add(std.key);
+          }
+        }
+        
+        setCustomFields(custom);
+        setRemovedStandardFields(removed);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const addCustomField = () => {
@@ -124,7 +164,6 @@ function CreateFormContent() {
       return;
     }
 
-    // Validate custom fields
     for (const field of customFields) {
       if (!field.label.trim()) {
         setError("All custom fields must have a label");
@@ -138,37 +177,28 @@ function CreateFormContent() {
 
     setSaving(true);
 
-    // Filter out removed standard fields
     const activeStandardFields = STANDARD_FIELDS.filter((field) => !removedStandardFields.has(field.key));
     const fields = [...activeStandardFields, ...customFields];
 
-    const res = await apiFetch("/form-templates", {
-      method: "POST",
+    const res = await apiFetch(`/form-templates/${templateId}`, {
+      method: "PUT",
       body: JSON.stringify({
-        batchId: selectedBatchId,
         name: formName,
         fields,
       }),
     });
 
-    if (res.success || res.data || (res as any).id) {
-      const resAny = res as any;
-      const formId = res.data?.id || resAny.id;
-
-      if (formId) {
-        setSaving(false);
-        await new Promise(resolve => setTimeout(resolve, 100));
-        // Always redirect to Bulk Upload Enrollments page after form creation
-        router.push(`/admin/enrollments/upload?formId=${formId}&batchId=${selectedBatchId}`);
+    if (res.success && res.data) {
+      if (returnTo) {
+        router.push(`${returnTo}?batchId=${selectedBatchId}`);
         return;
       }
-
-      setError("Failed to get form ID from response");
-      setSaving(false);
+      router.push("/admin/batches");
     } else {
-      setError((res as any).message || "Failed to create form template");
-      setSaving(false);
+      setError(res.message || "Failed to update form template");
     }
+
+    setSaving(false);
   };
 
   return (
@@ -378,7 +408,7 @@ function CreateFormContent() {
               disabled={saving || loading}
               className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
             >
-              {saving ? "Creating..." : "Create Form"}
+              {saving ? "Updating..." : (templateId ? "Update Form" : "Create Form")}
             </button>
             <Link
               href={returnTo || "/admin/batches"}
@@ -395,7 +425,7 @@ function CreateFormContent() {
 export default function CreateFormPage() {
   return (
     <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
-      <CreateFormContent />
+      <EditFormContent />
     </Suspense>
   );
 }

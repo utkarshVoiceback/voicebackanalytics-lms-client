@@ -10,7 +10,6 @@ import { apiFetch } from "@/lib/api";
 export default function CreateBatchPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [batchTitle, setBatchTitle] = useState("");
   const [courseId, setCourseId] = useState("");
@@ -31,13 +30,6 @@ export default function CreateBatchPage() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -71,14 +63,6 @@ export default function CreateBatchPage() {
     }
     setLoading(false);
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

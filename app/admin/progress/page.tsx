@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
 
 interface LearnerProgress {
@@ -29,9 +27,6 @@ interface Batch {
 }
 
 export default function AdminProgressPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  
   const [learners, setLearners] = useState<LearnerProgress[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
@@ -39,18 +34,8 @@ export default function AdminProgressPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
-      fetchData();
-    }
-  }, [isAuthenticated, user]);
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -75,14 +60,6 @@ export default function AdminProgressPage() {
     const matchesBatch = selectedBatchId ? l.batchId === selectedBatchId : true;
     return matchesSearch && matchesBatch;
   });
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

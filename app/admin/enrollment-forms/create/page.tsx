@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
 
 interface Batch {
@@ -21,8 +19,6 @@ interface EnrollmentFormResponse {
 }
 
 export default function CreateEnrollmentFormPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState("");
@@ -34,14 +30,8 @@ export default function CreateEnrollmentFormPage() {
   const [enrollmentLink, setEnrollmentLink] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    } else {
-      fetchBatches();
-    }
-  }, [isAuthenticated, user, router]);
+    fetchBatches();
+  }, []);
 
   const fetchBatches = async () => {
     setBatchesLoading(true);
@@ -84,14 +74,6 @@ export default function CreateEnrollmentFormPage() {
     }
     setLoading(false);
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
