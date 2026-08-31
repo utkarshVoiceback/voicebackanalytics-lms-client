@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 import { useAppSelector } from "@/store";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
 
@@ -47,28 +47,18 @@ interface Assessment {
 }
 
 export default function AdminLearnerProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
   const { id } = use(params);
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  
+
   const [learner, setLearner] = useState<Learner | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && (user?.role === "ADMIN" || user?.role === "INSTRUCTOR") && id) {
+    if (id) {
       fetchLearnerDetails();
     }
-  }, [isAuthenticated, user, id]);
+  }, [id]);
 
   const [resume, setResume] = useState<any | null>(null);
 
@@ -112,14 +102,6 @@ export default function AdminLearnerProfilePage({ params }: { params: Promise<{ 
     const completed = assessments.filter((a) => a.assessmentStatus === "COMPLETED").length;
     return Math.round((completed / assessments.length) * 100);
   };
-
-  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   if (loading) {
     return (

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAppSelector } from "@/store";
 import { apiFetch, getImageUrl } from "@/lib/api";
+import AppConfigSection from "./AppConfigSection";
 
 interface Banner {
   id: string;
@@ -244,6 +245,9 @@ export default function BannersPage() {
           </Link>
         </div>
       )}
+
+      {/* App Config Section */}
+      <AppConfigSection />
     </div>
   );
 }

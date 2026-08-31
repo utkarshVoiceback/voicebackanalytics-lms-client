@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
-import { useAppSelector } from "@/store";
 
 interface EnrollmentForm {
   id: string;
@@ -16,8 +14,6 @@ interface EnrollmentForm {
 }
 
 export default function EnrollmentFormsPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [forms, setForms] = useState<EnrollmentForm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,18 +21,8 @@ export default function EnrollmentFormsPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
-      fetchForms();
-    }
-  }, [isAuthenticated, user]);
+    fetchForms();
+  }, []);
 
   const fetchForms = async () => {
     setLoading(true);
@@ -61,14 +47,6 @@ export default function EnrollmentFormsPage() {
     setForms(filtered);
     // In a real app, you'd call an API with search params
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

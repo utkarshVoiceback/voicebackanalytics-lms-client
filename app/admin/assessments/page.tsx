@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { useAppSelector } from "@/store";
 
 interface Batch {
   id: string;
@@ -22,26 +21,14 @@ interface ModuleData {
 
 export default function AdminAssessmentsPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [modules, setModules] = useState<ModuleData[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
-      fetchBatches();
-    }
-  }, [isAuthenticated, user]);
+    fetchBatches();
+  }, []);
 
   useEffect(() => {
     if (selectedBatchId) {
@@ -77,14 +64,6 @@ export default function AdminAssessmentsPage() {
     }
     setLoading(false);
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">

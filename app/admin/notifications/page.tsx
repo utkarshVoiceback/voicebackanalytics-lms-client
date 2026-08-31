@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
 
 interface Learner {
@@ -41,9 +39,6 @@ interface Notification {
 }
 
 export default function AdminNotificationsPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,18 +56,8 @@ export default function AdminNotificationsPage() {
   const [loadingData, setLoadingData] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "ADMIN") {
-      fetchNotifications();
-    }
-  }, [isAuthenticated, user]);
+    fetchNotifications();
+  }, []);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -156,14 +141,6 @@ export default function AdminNotificationsPage() {
       prev.includes(learnerId) ? prev.filter((id) => id !== learnerId) : [...prev, learnerId]
     );
   };
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

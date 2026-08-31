@@ -36,8 +36,6 @@ interface UploadResult {
 
 function UploadContent() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedBatchId, setSelectedBatchId] = useState("");
   const [formTemplate, setFormTemplate] = useState<FormTemplate | null>(null);
@@ -48,14 +46,8 @@ function UploadContent() {
   const [uploadResults, setUploadResults] = useState<UploadResult | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
-      router.push("/");
-    } else {
-      fetchBatches();
-    }
-  }, [isAuthenticated, user, router]);
+    fetchBatches();
+  }, []);
 
   const fetchBatches = async () => {
     setLoading(true);
@@ -134,14 +126,6 @@ function UploadContent() {
 
     setUploading(false);
   };
-
-  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "INSTRUCTOR")) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

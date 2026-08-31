@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
+import { exportLearnersToExcel } from "@/lib/excel-export";
 import { useAppSelector } from "@/store";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
 
@@ -36,21 +37,8 @@ export default function AdminLearnersPage() {
   const [selectedResumeStatus, setSelectedResumeStatus] = useState("ALL");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN" && user.role !== "INSTRUCTOR") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  useEffect(() => {
-    if (
-      isAuthenticated &&
-      (user?.role === "ADMIN" || user?.role === "INSTRUCTOR")
-    ) {
-      fetchLearners();
-    }
-  }, [isAuthenticated, user]);
+    fetchLearners();
+  }, []);
 
   const fetchLearners = async () => {
     setLoading(true);
@@ -150,15 +138,26 @@ export default function AdminLearnersPage() {
             Manage and view all enrolled learners
           </p>
         </div>
-        <Link
-          href="/admin/learners/upload"
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33A3 3 0 0116.5 19.5H6.75Z" />
-          </svg>
-          Upload Learners
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={() => exportLearnersToExcel(filteredLearners)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download Excel
+          </button>
+          <Link
+            href="/admin/learners/upload"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33A3 3 0 0116.5 19.5H6.75Z" />
+            </svg>
+            Upload Learners
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-3">

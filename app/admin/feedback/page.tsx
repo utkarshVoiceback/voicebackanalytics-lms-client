@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { socketService } from "@/lib/socket";
+import { exportChatToExcel } from "@/lib/excel-export";
 
 interface User {
   id: string;
@@ -243,6 +244,17 @@ function AdminChatContent() {
     }
   };
 
+  const handleDownloadChat = () => {
+    if (!messages || messages.length === 0) {
+      alert('No messages to download');
+      return;
+    }
+    exportChatToExcel(messages, {
+      conversationId: selectedConversation?.id || '',
+      participantName: selectedConversation?.learner?.fullName || 'Conversation',
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
@@ -343,14 +355,25 @@ function AdminChatContent() {
           ) : selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">
-                    {selectedConversation.learner?.fullName?.charAt(0).toUpperCase()}
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">
+                      {selectedConversation.learner?.fullName?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{selectedConversation.learner?.fullName}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{selectedConversation.batch?.batchTitle || "Learner"}</p>
+                  </div>
                 </div>
-                <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{selectedConversation.learner?.fullName}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{selectedConversation.batch?.batchTitle || "Learner"}</p>
-                </div>
+                <button
+                  onClick={handleDownloadChat}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg transition-colors"
+                  title="Download Chat as Excel"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                </button>
               </div>
 
               {/* Chat Messages */}

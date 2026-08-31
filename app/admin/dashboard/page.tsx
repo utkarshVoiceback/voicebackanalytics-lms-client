@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
@@ -15,20 +14,13 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else if (user && user.role !== "ADMIN") {
-      router.push("/");
-    } else if (isAuthenticated && user?.role === "ADMIN") {
-      fetchStats();
-    }
-  }, [isAuthenticated, user, router]);
+    fetchStats();
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -44,20 +36,12 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Welcome Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Admin Dashboard</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {user.fullName}</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {user?.fullName}</p>
       </div>
 
       {/* Stats Summary */}

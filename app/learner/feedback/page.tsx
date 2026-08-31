@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "@/lib/api";
 import { socketService } from "@/lib/socket";
+import { exportChatToExcel } from "@/lib/excel-export";
 
 interface Message {
   id: string;
@@ -134,6 +135,17 @@ export default function LearnerFeedbackPage() {
     }
   };
 
+  const handleDownloadChat = () => {
+    if (!messages || messages.length === 0) {
+      alert('No messages to download');
+      return;
+    }
+    exportChatToExcel(messages, {
+      conversationId: conversation?.id || '',
+      participantName: 'Instructor',
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950">
@@ -155,17 +167,28 @@ export default function LearnerFeedbackPage() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex-col relative">
         {/* Chat Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">
-            I
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">
+              I
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Instructor</h3>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>{" "}
+                Online
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Instructor</h3>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>{" "}
-              Online
-            </p>
-          </div>
+          <button
+            onClick={handleDownloadChat}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg transition-colors"
+            title="Download Chat as Excel"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+          </button>
         </div>
 
         {/* Chat Messages */}

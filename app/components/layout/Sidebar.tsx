@@ -487,6 +487,7 @@ export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { useCustomLogo, customLogoUrl } = useAppSelector((state) => state.appConfig);
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -549,28 +550,14 @@ export default function Sidebar({ role }: SidebarProps) {
             : "justify-between px-4"
         }`}
       >
-        {(!collapsed || isMobile) && (
+        {(!collapsed || isMobile) && useCustomLogo && customLogoUrl && (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <span className="text-white text-xs font-bold tracking-tight">
-                LMS
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight truncate">
-                Skilvo
-              </p>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight truncate">
-                Training Platform
-              </p>
-            </div>
+            <img src={customLogoUrl} alt="Logo" className="h-18 object-contain" />
           </div>
         )}
-        {collapsed && !isMobile && (
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <span className="text-white text-xs font-bold tracking-tight">
-              LMS
-            </span>
+        {collapsed && !isMobile && useCustomLogo && customLogoUrl && (
+          <div className="w-10 h-10 flex items-center justify-center">
+            <img src={customLogoUrl} alt="Logo" className="w-8 object-contain" />
           </div>
         )}
         {!isMobile && (
@@ -687,10 +674,16 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* ── Mobile: top bar with hamburger ── */}
       <div className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold">LMS</span>
-          </div>
-          <span className="text-sm font-semibold text-slate-900 dark:text-white">Skilvo</span>
+          {useCustomLogo && customLogoUrl ? (
+            <img src={customLogoUrl} alt="Logo" className="h-7 object-contain" />
+          ) : (
+            <>
+              <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold">LMS</span>
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Skilvo</span>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggle variant="icon-button" />
