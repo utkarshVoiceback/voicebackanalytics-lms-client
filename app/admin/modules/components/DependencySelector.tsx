@@ -9,36 +9,56 @@ interface Module {
 
 interface Props {
   courseId: string;
-  currentModuleId?: string;
+  currentModuleId?: string; // the module being created/edited
   selectedIds: string[];
   onChange: (ids: string[]) => void;
 }
 
 export function DependencySelector({ courseId, currentModuleId, selectedIds, onChange }: Props) {
   const [modules, setModules] = useState<Module[]>([]);
+  const [forbiddenIds, setForbiddenIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
+  const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
+  const apiBase = process.env.NEXT_PUBLIC_API_SERVER_URL || "http://localhost:5000/api/v1";
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+  // Fetch all course modules
   useEffect(() => {
     if (!courseId) return;
     setLoading(true);
-    const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/modules?courseId=${courseId}`,
-      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-    )
+    fetch(`${apiBase}/modules?courseId=${courseId}`, { headers })
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.data) {
-          setModules(
-            (data.data as Module[]).filter((m) => m.id !== currentModuleId)
-          );
+          setModules(data.data as Module[]);
         }
       })
       .finally(() => setLoading(false));
-  }, [courseId, currentModuleId]);
+  }, [courseId]);
+
+  // Fetch forbidden IDs (circular protection) whenever currentModuleId is known
+  useEffect(() => {
+    if (!currentModuleId) {
+      // For new module creation: only self is forbidden
+      setForbiddenIds(new Set());
+      return;
+    }
+    fetch(`${apiBase}/modules/${currentModuleId}/forbidden-dependencies`, { headers })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.data?.forbiddenIds) {
+          setForbiddenIds(new Set(data.data.forbiddenIds));
+        }
+      })
+      .catch(() => {
+        // Graceful fallback: at minimum exclude self
+        if (currentModuleId) setForbiddenIds(new Set([currentModuleId]));
+      });
+  }, [currentModuleId]);
 
   // Close on outside click
   useEffect(() => {
@@ -51,9 +71,9 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const filtered = modules.filter((m) =>
-    m.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = modules
+    .filter((m) => m.id !== currentModuleId && !forbiddenIds.has(m.id))
+    .filter((m) => m.title.toLowerCase().includes(search.toLowerCase()));
 
   const toggle = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -132,19 +152,27 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
               ) : (
                 filtered.map((m) => {
                   const checked = selectedIds.includes(m.id);
+
                   return (
                     <button
                       key={m.id}
                       type="button"
                       onClick={() => toggle(m.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${checked ? "bg-blue-50 dark:bg-blue-500/10" : ""}`}
+                      className={[
+                        "w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors",
+                        checked
+                          ? "bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800",
+                      ].join(" ")}
                     >
+                      {/* Checkbox indicator */}
                       <span
-                        className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center ${
+                        className={[
+                          "flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center",
                           checked
                             ? "bg-blue-600 border-blue-600"
-                            : "border-slate-400 dark:border-slate-500"
-                        }`}
+                            : "border-slate-400 dark:border-slate-500",
+                        ].join(" ")}
                       >
                         {checked && (
                           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
@@ -152,7 +180,11 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
                           </svg>
                         )}
                       </span>
-                      <span className="text-slate-800 dark:text-slate-200">{m.title}</span>
+
+                      {/* Module title */}
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {m.title}
+                      </span>
                     </button>
                   );
                 })
