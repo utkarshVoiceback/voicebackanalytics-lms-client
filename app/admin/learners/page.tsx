@@ -33,6 +33,7 @@ export default function AdminLearnersPage() {
   const [search, setSearch] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("ALL");
   const [selectedResumeStatus, setSelectedResumeStatus] = useState("ALL");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLearners();
@@ -133,6 +134,28 @@ export default function AdminLearnersPage() {
       console.error("Download error:", err);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleApproveResume = async (learnerId: string) => {
+    try {
+      setApprovingId(learnerId);
+      setError(null);
+      const res = await apiFetch(`/resumes/admin/${learnerId}/approve`, { method: "POST" });
+      if (res.success) {
+        setLearners(learners.map(l =>
+          l.id === learnerId
+            ? { ...l, resumeStatus: "APPROVED" }
+            : l
+        ));
+      } else {
+        setError(res.message || "Failed to approve resume");
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to approve resume");
+      console.error("Approve error:", err);
+    } finally {
+      setApprovingId(null);
     }
   };
 
@@ -309,7 +332,7 @@ export default function AdminLearnersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-col items-start gap-1">
+                      <div className="flex flex-col items-start gap-2">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
                           l.resumeStatus === "APPROVED" ? "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30"
                           : l.resumeStatus === "EDITED" ? "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30"
@@ -318,24 +341,47 @@ export default function AdminLearnersPage() {
                         }`}>
                           {l.resumeStatus?.replace("_", " ") || "NOT UPLOADED"}
                         </span>
-                        {l.resumeStatus && l.resumeStatus !== "NOT_UPLOADED" && (
-                          <button
-                            onClick={() => {
-                              const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
-                              const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
-                              const url = `${API_BASE_URL}${urlBase}/${l.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-                              const a = document.createElement("a");
-                              a.href = url;
-                              a.download = l.user?.fullName || "resume";
-                              document.body.appendChild(a);
-                              a.click();
-                              document.body.removeChild(a);
-                            }}
-                            className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                          >
-                            Download
-                          </button>
-                        )}
+                        <div className="flex flex-col gap-1 w-full">
+                          {l.resumeStatus === "APPROVED" && (
+                            <button
+                              onClick={() => {
+                                try {
+                                  const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
+                                  const urlBase = user?.role === "ADMIN" ? "/resumes/admin" : "/resumes/instructor";
+                                  const url = `${API_BASE_URL}${urlBase}/${l.id}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = l.user?.fullName || "resume";
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                } catch (err: any) {
+                                  console.error("Resume download error:", err);
+                                  setError(`Failed to download resume: ${err.message}`);
+                                }
+                              }}
+                              className="text-xs text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium inline-flex items-center gap-1"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                              </svg>
+                              Download Resume
+                            </button>
+                          )}
+                          {l.resumeStatus === "EDITED" && user?.role === "ADMIN" && (
+                            <button
+                              onClick={() => handleApproveResume(l.id)}
+                              disabled={approvingId === l.id}
+                              className="text-xs text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center gap-1 px-2 py-1 rounded transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                              </svg>
+                              {approvingId === l.id ? "Approving..." : "Approve"}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
