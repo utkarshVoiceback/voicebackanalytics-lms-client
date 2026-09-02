@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface Module {
   id: string;
@@ -23,14 +24,13 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
   const dropRef = useRef<HTMLDivElement>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
-  const apiBase = process.env.NEXT_PUBLIC_API_SERVER_URL || "http://localhost:5000/api/v1";
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   // Fetch all course modules
   useEffect(() => {
     if (!courseId) return;
     setLoading(true);
-    fetch(`${apiBase}/modules?courseId=${courseId}`, { headers })
+    fetch(`${API_BASE_URL}/modules?courseId=${courseId}`, { headers })
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.data) {
@@ -47,7 +47,7 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
       setForbiddenIds(new Set());
       return;
     }
-    fetch(`${apiBase}/modules/${currentModuleId}/forbidden-dependencies`, { headers })
+    fetch(`${API_BASE_URL}/modules/${currentModuleId}/forbidden-dependencies`, { headers })
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.data?.forbiddenIds) {
