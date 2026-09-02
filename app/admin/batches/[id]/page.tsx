@@ -27,7 +27,8 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
 
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  
+  const [formId, setFormId] = useState<string | null>(null);
+
   const [enrolledStudents, setEnrolledStudents] = useState<any[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
 
@@ -39,6 +40,15 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
       fetchExistingEnrollmentForm(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (id && !generatedLink && !generatingLink && formId === null) {
+      const timer = setTimeout(() => {
+        handleGenerateLinkAuto();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [id, generatedLink, generatingLink, formId]);
 
   const fetchEnrolledStudents = async (batchId: string) => {
     setLoadingStudents(true);
@@ -109,7 +119,24 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
     setUpdateLoading(false);
   };
 
-  const [formId, setFormId] = useState<string | null>(null);
+  const handleGenerateLinkAuto = async () => {
+    setGeneratingLink(true);
+    setGenerateError(null);
+
+    const res = await apiFetch("/enrollment-forms", {
+      method: "POST",
+      body: JSON.stringify({ batchId: id }),
+    });
+
+    if (res.success && res.data) {
+      const link = `${window.location.origin}/enroll/${res.data.batchId || id}`;
+      dispatch(setGeneratedLink(link));
+      setFormId(res.data.id);
+    } else {
+      setGenerateError(res.message || "Failed to generate enrollment link");
+    }
+    setGeneratingLink(false);
+  };
 
   const handleGenerateLink = async () => {
     setGeneratingLink(true);
@@ -351,57 +378,35 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
                   <span>{generateError}</span>
                 </div>
               )}
-              {generatedLink ? (
-                <>
-                  <div className="p-3 bg-slate-100 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 break-all text-sm text-emerald-600 dark:text-emerald-400 font-mono">
-                    {generatedLink}
+              {generatingLink ? (
+                <div className="p-3 bg-slate-100 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                  <div className="flex justify-center mb-2">
+                    <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={copyToClipboard}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
-                      </svg>
-                      Copy Link
-                    </button>
-                    {/* {formId && (
-                      <Link
-                        href={`/admin/enrollments/upload?formId=${formId}&batchId=${id}`}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors"
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Generating enrollment link...</p>
+                </div>
+              ) : (
+                <>
+                  {generatedLink && (
+                    <>
+                      <div className="p-3 bg-slate-100 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 break-all text-sm text-emerald-600 dark:text-emerald-400 font-mono">
+                        {generatedLink}
+                      </div>
+                      <button
+                        onClick={copyToClipboard}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33A3 3 0 0 1 16.5 19.5H6.75Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                         </svg>
-                        Bulk Upload
-                      </Link>
-                    )} */}
-                  </div>
-                </>
-              ) : (
-                <button
-                  onClick={handleGenerateLink}
-                  disabled={generatingLink}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {generatingLink ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      Generate Enrollment Form
+                        Copy Link
+                      </button>
                     </>
                   )}
-                </button>
+                </>
               )}
             </div>
           </div>

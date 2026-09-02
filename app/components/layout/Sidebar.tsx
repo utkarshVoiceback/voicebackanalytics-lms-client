@@ -348,7 +348,7 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
       items: [
         {
           href: "/admin/home-page/banners",
-          label: "Banners",
+          label: "Admin Profile",
           icon: icons.banner,
         },
       ],
