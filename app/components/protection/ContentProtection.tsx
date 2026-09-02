@@ -15,14 +15,15 @@ interface ContentProtectionProps {
 export default function ContentProtection({ children }: ContentProtectionProps) {
   const { user } = useSelector((state: RootState) => state.auth);
   
-  // Only activate protection for learners
+  // Activate protection for learners AND instructors
+  const isProtected = user?.role === "LEARNER" || user?.role === "INSTRUCTOR";
   const isLearner = user?.role === "LEARNER";
   
-  const { showOverlay } = useContentProtection(isLearner);
+  const { showOverlay } = useContentProtection(isProtected);
 
   // Print protection styles
   useEffect(() => {
-    if (isLearner && protectionConfig.printProtectionEnabled) {
+    if (isProtected && protectionConfig.printProtectionEnabled) {
       const style = document.createElement("style");
       style.id = "print-protection-style";
       style.innerHTML = `
@@ -48,9 +49,9 @@ export default function ContentProtection({ children }: ContentProtectionProps) 
         if (el) document.head.removeChild(el);
       };
     }
-  }, [isLearner]);
+  }, [isProtected]);
 
-  if (!isLearner) {
+  if (!isProtected) {
     return <>{children}</>;
   }
 
