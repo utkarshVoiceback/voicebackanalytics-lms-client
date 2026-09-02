@@ -33,6 +33,7 @@ function UploadContent() {
   const [learnersFile, setLearnersFile] = useState<File | null>(null);
   const [learnersSelectedBatchId, setLearnersSelectedBatchId] = useState("");
   const [learnersFormTemplate, setLearnersFormTemplate] = useState<any | null>(null);
+  const [learnersCheckingForm, setLearnersCheckingForm] = useState(false);
   const [learnersUploading, setLearnersUploading] = useState(false);
   const [learnersError, setLearnersError] = useState<string | null>(null);
   const [learnersUploadResults, setLearnersUploadResults] = useState<any | null>(null);
@@ -139,6 +140,7 @@ function UploadContent() {
     setLearnersError(null);
 
     if (batchId) {
+      setLearnersCheckingForm(true);
       try {
         const res = await apiFetch(`/form-templates/batch/${batchId}`);
         if (res.success && res.data) {
@@ -151,6 +153,7 @@ function UploadContent() {
       } catch (err: any) {
         setLearnersError("Failed to load form template: " + (err.message || "Network error"));
       }
+      setLearnersCheckingForm(false);
     }
   };
 
@@ -261,36 +264,17 @@ function UploadContent() {
         <div>
           <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label htmlFor="batchSelect" className="block text-sm font-medium text-slate-600 dark:text-slate-300">
-                  Select Batch <span className="text-red-600 dark:text-red-400">*</span>
-                </label>
-                {selectedBatchId && !checkingForm && (
-                  formId ? (
-                    <Link
-                      href={`/admin/batches/form-builder/edit?returnTo=/admin/enrollments/upload&batchId=${selectedBatchId}`}
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
-                    >
-                      ✎ Edit Form
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/admin/batches/form-builder/create?returnTo=/admin/enrollments/upload&batchId=${selectedBatchId}`}
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
-                    >
-                      + Add Form
-                    </Link>
-                  )
-                )}
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <label htmlFor="batchSelect" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                Select Batch <span className="text-red-600 dark:text-red-400">*</span>
+              </label>
+              <div className="flex flex-col gap-2">
                 <select
                   id="batchSelect"
                   required
                   value={selectedBatchId}
                   onChange={(e) => setSelectedBatchId(e.target.value)}
                   disabled={!!initialBatchId}
-                  className={`flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors ${initialBatchId ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors ${initialBatchId ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Choose a batch...</option>
                   {batches.map((b) => (
@@ -308,7 +292,11 @@ function UploadContent() {
                           method: "GET",
                           headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
                         });
-                        if (!response.ok) throw new Error("Failed to download template");
+                        if (!response.ok) {
+                          const errorText = await response.text();
+                          console.error("Download failed:", response.status, errorText);
+                          throw new Error(`HTTP ${response.status}: ${errorText}`);
+                        }
                         const blob = await response.blob();
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement("a");
@@ -318,12 +306,16 @@ function UploadContent() {
                         link.click();
                         document.body.removeChild(link);
                         window.URL.revokeObjectURL(url);
-                      } catch (err) {
-                        dispatch(setEnrollmentError("Failed to download template. Ensure the Form ID is correct."));
+                      } catch (err: any) {
+                        console.error("Download error:", err);
+                        dispatch(setEnrollmentError("Failed to download template: " + err.message));
                       }
                     }}
-                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    className="w-full px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
                     Download Template
                   </button>
                 )}
@@ -343,7 +335,7 @@ function UploadContent() {
               </svg>
               <div>
                 <h4 className="font-semibold text-blue-900 dark:text-blue-200 text-sm mb-1">Excel File for Bulk Enrollment Invitations</h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300">Upload a spreadsheet with learner emails and details. These records will be validated and converted into enrollment invitations that can be sent via email for bulk onboarding.</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Upload a spreadsheet with learner emails and details. These records will be validated and  enrollment invitations will be sent via email.</p>
               </div>
             </div>
 
@@ -496,22 +488,83 @@ function UploadContent() {
           <form onSubmit={handleLearnersSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
             {/* Batch Selection */}
             <div>
-              <label htmlFor="learners-batch" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                Batch <span className="text-red-600 dark:text-red-400">*</span>
-              </label>
-              <select
-                id="learners-batch"
-                value={learnersSelectedBatchId}
-                onChange={(e) => handleLearnersBatchChange(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">Select a batch...</option>
-                {batches.map((batch) => (
-                  <option key={batch.id} value={batch.id}>
-                    {batch.batchTitle}
-                  </option>
-                ))}
-              </select>
+              <div className="flex justify-between items-center mb-1.5">
+                <label htmlFor="learners-batch" className="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Batch <span className="text-red-600 dark:text-red-400">*</span>
+                </label>
+                {learnersSelectedBatchId && (
+                  learnersFormTemplate ? (
+                    <Link
+                      href={`/admin/batches/form-builder/edit?returnTo=/admin/enrollments/upload&batchId=${learnersSelectedBatchId}`}
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
+                    >
+                      ✎ Edit Form
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/admin/batches/form-builder/create?returnTo=/admin/enrollments/upload&batchId=${learnersSelectedBatchId}`}
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline"
+                    >
+                      + Add Form
+                    </Link>
+                  )
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <select
+                  id="learners-batch"
+                  value={learnersSelectedBatchId}
+                  onChange={(e) => handleLearnersBatchChange(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Select a batch...</option>
+                  {batches.map((batch) => (
+                    <option key={batch.id} value={batch.id}>
+                      {batch.batchTitle}
+                    </option>
+                  ))}
+                </select>
+
+                {learnersFormTemplate && learnersSelectedBatchId && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL + '/api/v1';
+                        const downloadUrl = `${apiBaseUrl}/form-templates/${learnersFormTemplate.id}/download`;
+                        console.log("Downloading template from:", downloadUrl, "FormID:", learnersFormTemplate.id);
+                        const response = await fetch(downloadUrl, {
+                          method: "GET",
+                          headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
+                        });
+                        if (!response.ok) {
+                          const errorText = await response.text();
+                          console.error("Download failed:", response.status, errorText);
+                          throw new Error(`HTTP ${response.status}: ${errorText}`);
+                        }
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `form-template.xlsx`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                      } catch (err: any) {
+                        console.error("Download error:", err);
+                        setLearnersError("Failed to download template: " + err.message);
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Download Form Template
+                  </button>
+                )}
+              </div>
               {learnersFormTemplate && (
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">✓ Form template "{learnersFormTemplate.name}" found for this batch</p>
               )}
