@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { API_BASE_URL } from "@/lib/api";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { API_BASE_URL, apiFetchBlob } from "@/lib/api";
+import ResumeViewModal from "./ResumeViewModal";
 
 interface Resume {
   id: string;
@@ -37,7 +38,22 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [confirmReplace, setConfirmReplace] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const ALLOWED_TYPES = ["application/pdf", "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
@@ -92,7 +108,27 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
     }
   };
 
-  const handleViewResume = () => {
+  const handleViewResume = async () => {
+    setPreviewLoading(true);
+    setPreviewError(null);
+
+    const { blob, error } = await apiFetchBlob("/resumes/my/file");
+
+    if (error || !blob) {
+      setPreviewError(error || "Failed to load resume");
+      setPreviewLoading(false);
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    previewUrlRef.current = url;
+    setPreviewUrl(url);
+    setPreviewBlob(blob);
+    setPreviewOpen(true);
+    setPreviewLoading(false);
+  };
+
+  const handleDownloadResume = () => {
     const token = getToken();
     const url = token
       ? `${API_BASE_URL}/resumes/my/file?token=${encodeURIComponent(token)}`
@@ -103,6 +139,16 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewOpen(false);
+    setPreviewUrl(null);
+    setPreviewBlob(null);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
   };
 
   const handleDownloadTemplate = () => {
@@ -122,7 +168,17 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
     : STATUS_CONFIG.NOT_UPLOADED;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+    <>
+      <ResumeViewModal
+        isOpen={previewOpen}
+        fileUrl={previewUrl}
+        fileType={resume?.fileType || ""}
+        fileName={resume?.fileName || "resume"}
+        onClose={handleClosePreview}
+        onDownload={handleDownloadResume}
+        blob={previewBlob}
+      />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -219,13 +275,24 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
             <div className="flex gap-3 flex-wrap">
               <button
                 onClick={handleViewResume}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+                disabled={previewLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 </svg>
-                View Resume
+                {previewLoading ? "Loading..." : "View Resume"}
+              </button>
+
+              <button
+                onClick={handleDownloadResume}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Download Resume
               </button>
 
               {/* Replace Resume */}
@@ -278,6 +345,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
