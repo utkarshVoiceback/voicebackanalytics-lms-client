@@ -155,7 +155,7 @@ function CreateModuleForm() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Sequential Access</label>
                 <div className="flex items-center gap-3 mt-2">
                   <button
@@ -169,7 +169,7 @@ function CreateModuleForm() {
                     {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* ── Dependency Section ──────────────────────────────────────────── */}
