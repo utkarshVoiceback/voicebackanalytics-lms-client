@@ -35,6 +35,8 @@ export default function AdminLearnersPage() {
   const [selectedResumeStatus, setSelectedResumeStatus] = useState("ALL");
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
   useEffect(() => {
     fetchLearners();
   }, []);
@@ -94,25 +96,22 @@ export default function AdminLearnersPage() {
     try {
       setDownloading(true);
       setError(null);
+      setSuccessMsg(null);
+      
       const token = typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
-
-      let url = "/resumes/admin/download-zip?";
-      if (selectedBatch !== "ALL") {
-        const batchId = learners.find(l => l.batch.batchTitle === selectedBatch)?.batchId;
-        if (batchId) {
-          url += `batchId=${encodeURIComponent(batchId)}&`;
-        }
-      }
-      if (search) {
-        url += `search=${encodeURIComponent(search)}&`;
-      }
-      url += `token=${encodeURIComponent(token || "")}`;
+      // Using the exact API required by the spec
+      const url = `/admin/learners/resumes/download?token=${encodeURIComponent(token || "")}`;
 
       const response = await fetch(`${API_BASE_URL}${url}`);
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        try {
+          const errObj = JSON.parse(errorText);
+          throw new Error(errObj.message || `HTTP ${response.status}: Failed to download`);
+        } catch (e) {
+          throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        }
       }
 
       const blob = await response.blob();
@@ -124,14 +123,18 @@ export default function AdminLearnersPage() {
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `approved-resumes-${new Date().toISOString().split("T")[0]}.zip`;
+      a.download = "approved-resumes.zip";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(blobUrl);
+      
+      setSuccessMsg("Approved resumes downloaded successfully.");
+      setTimeout(() => setSuccessMsg(null), 5000); // Clear toast after 5s
     } catch (err: any) {
       setError(err.message || "Failed to download resumes");
       console.error("Download error:", err);
+      setTimeout(() => setError(null), 5000); // Auto-clear error toast too
     } finally {
       setDownloading(false);
     }
@@ -244,7 +247,7 @@ export default function AdminLearnersPage() {
         <div className="flex-grow"></div>
 
         {/* Download Approved Resumes ZIP */}
-        {/* {user?.role === "ADMIN" && (
+        {user?.role === "ADMIN" && (
           <button
             onClick={handleDownloadZip}
             disabled={downloading}
@@ -253,10 +256,16 @@ export default function AdminLearnersPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
-            {downloading ? "Preparing ZIP..." : "Download Resumes ZIP"}
+            {downloading ? "Preparing ZIP..." : "Download All Resumes"}
           </button>
-        )} */}
+        )}
       </div>
+
+      {successMsg && (
+        <div className="mb-6 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+          {successMsg}
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
