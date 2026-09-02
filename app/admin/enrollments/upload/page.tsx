@@ -200,8 +200,12 @@ function UploadContent() {
         <Link href="/admin/batches" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
           ← Back to Batch Management
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Bulk Upload</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Upload enrollments or learners in bulk</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          {activeTab === "enrollments" ? "Bulk Upload Enrollments" : "Bulk Upload Learners"}
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          {activeTab === "enrollments" ? "Upload multiple enrollments via Excel file" : "Upload multiple learners via Excel file"}
+        </p>
       </div>
 
       {/* Tabs */}
@@ -340,7 +344,7 @@ function UploadContent() {
               </svg>
               <div>
                 <h4 className="font-semibold text-blue-900 dark:text-blue-200 text-sm mb-1">Excel File for Bulk Enrollment Invitations</h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300">Upload a spreadsheet with learner emails and details. These records will be validated and converted into enrollment invitations that can be sent via email or WhatsApp for bulk onboarding.</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Upload a spreadsheet with learner emails and details. These records will be validated and converted into enrollment invitations that can be sent via email for bulk onboarding.</p>
               </div>
             </div>
 
