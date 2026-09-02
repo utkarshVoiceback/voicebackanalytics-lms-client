@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 
 export default function AppConfigSection() {
   const [organisationName, setOrganisationName] = useState("");
@@ -47,8 +47,7 @@ export default function AppConfigSection() {
         const formData = new FormData();
         formData.append("logo", logoFile);
 
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL + '/api/v1';
-        const uploadRes = await fetch(`${apiBaseUrl}/app-config/upload-logo`, {
+        const uploadRes = await fetch(`${API_BASE_URL}/app-config/upload-logo`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}`,

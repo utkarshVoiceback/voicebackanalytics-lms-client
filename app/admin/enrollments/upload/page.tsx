@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setUploadResults, setEnrollmentLoading, setEnrollmentError } from "@/store/enrollmentSlice";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 
 function UploadContent() {
   const searchParams = useSearchParams();
@@ -287,9 +287,7 @@ function UploadContent() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL + '/api/v1';
-                        const downloadUrl = `${apiBaseUrl}/form-templates/${formId}/download?type=enrollment`;
-                        console.log("Downloading enrollment template from:", downloadUrl, "FormID:", formId);
+                        const downloadUrl = `${API_BASE_URL}/form-templates/${formId}/download`;
                         const response = await fetch(downloadUrl, {
                           method: "GET",
                           headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
