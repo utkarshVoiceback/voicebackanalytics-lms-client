@@ -285,31 +285,13 @@ function UploadContent() {
                 {formId && !checkingForm && (
                   <button
                     type="button"
-                    onClick={async () => {
-                      try {
-                        const downloadUrl = `${API_BASE_URL}/form-templates/${formId}/download`;
-                        const response = await fetch(downloadUrl, {
-                          method: "GET",
-                          headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
-                        });
-                        if (!response.ok) {
-                          const errorText = await response.text();
-                          console.error("Download failed:", response.status, errorText);
-                          throw new Error(`HTTP ${response.status}: ${errorText}`);
-                        }
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement("a");
-                        link.href = url;
-                        link.download = `form-template.xlsx`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-                      } catch (err: any) {
-                        console.error("Download error:", err);
-                        dispatch(setEnrollmentError("Failed to download template: " + err.message));
-                      }
+                    onClick={() => {
+                      const link = document.createElement("a");
+                      link.href = "/import-template.xlsx";
+                      link.download = "import-template.xlsx";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
                     }}
                     className="w-full px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
@@ -530,8 +512,7 @@ function UploadContent() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL + '/api/v1';
-                        const downloadUrl = `${apiBaseUrl}/form-templates/${learnersFormTemplate.id}/download`;
+                        const downloadUrl = `${API_BASE_URL}/form-templates/${learnersFormTemplate.id}/download`;
                         console.log("Downloading template from:", downloadUrl, "FormID:", learnersFormTemplate.id);
                         const response = await fetch(downloadUrl, {
                           method: "GET",
