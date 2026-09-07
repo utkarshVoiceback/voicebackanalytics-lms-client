@@ -85,7 +85,7 @@ export default function ResumeViewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+        className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-4xl w-full h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -117,12 +117,13 @@ export default function ResumeViewModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-800">
+        <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-800">
           {isPdf ? (
             <iframe
               src={fileUrl}
               className="w-full h-full border-none"
               title={fileName}
+              style={{ display: "block" }}
             />
           ) : isWord ? (
             <div

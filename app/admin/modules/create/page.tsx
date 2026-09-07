@@ -21,8 +21,10 @@ function CreateModuleForm() {
   const [isSequential, setIsSequential] = useState(true);
   const [hasDependency, setHasDependency] = useState(false);
   const [dependencyModuleIds, setDependencyModuleIds] = useState<string[]>([]);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCoursesDropdownOpen, setIsCoursesDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchcourses();
@@ -52,6 +54,11 @@ function CreateModuleForm() {
       return;
     }
 
+    if (hasDependency && selectedCourseIds.length === 0) {
+      setError("Please select at least one course, or disable the dependency toggle.");
+      return;
+    }
+
     setLoading(true);
     const res = await apiFetch("/modules", {
       method: "POST",
@@ -63,6 +70,7 @@ function CreateModuleForm() {
         isSequential,
         hasDependency,
         dependencyModuleIds: hasDependency ? dependencyModuleIds : [],
+        courseIds: hasDependency ? selectedCourseIds : [],
       }),
     });
 
@@ -143,7 +151,7 @@ function CreateModuleForm() {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                  Sequence Order <span className="text-red-600 dark:text-red-400">*</span>
+                  Display Sequence Order <span className="text-red-600 dark:text-red-400">*</span>
                 </label>
                 <input
                   type="number"
@@ -187,7 +195,10 @@ function CreateModuleForm() {
                   type="button"
                   onClick={() => {
                     setHasDependency(!hasDependency);
-                    if (hasDependency) setDependencyModuleIds([]);
+                    if (hasDependency) {
+                      setDependencyModuleIds([]);
+                      setSelectedCourseIds([]);
+                    }
                   }}
                   className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${hasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
                 >
@@ -195,12 +206,77 @@ function CreateModuleForm() {
                 </button>
               </div>
 
-              {hasDependency && courseId && (
-                <DependencySelector
-                  courseId={courseId}
-                  selectedIds={dependencyModuleIds}
-                  onChange={setDependencyModuleIds}
-                />
+              {hasDependency && (
+                <div className="space-y-5 overflow-visible">
+                  {courseId && (
+                    <div className="relative z-10">
+                      <DependencySelector
+                        courseId={courseId}
+                        selectedIds={dependencyModuleIds}
+                        onChange={setDependencyModuleIds}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                      Select Courses <span className="text-red-600 dark:text-red-400">*</span>
+                    </label>
+                    <div className="relative z-20">
+                      <button
+                        type="button"
+                        onClick={() => setIsCoursesDropdownOpen(!isCoursesDropdownOpen)}
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-sm">
+                          {selectedCourseIds.length === 0
+                            ? "Select courses..."
+                            : `${selectedCourseIds.length} course${selectedCourseIds.length > 1 ? "s" : ""} selected`}
+                        </span>
+                        <svg
+                          className={`w-5 h-5 transition-transform ${isCoursesDropdownOpen ? "rotate-180" : ""}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </button>
+
+                      {isCoursesDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg z-20">
+                          <div className="max-h-48 overflow-y-auto">
+                            {courses.length === 0 ? (
+                              <p className="px-4 py-3 text-sm text-slate-500">No courses available</p>
+                            ) : (
+                              courses.map((course) => (
+                                <label
+                                  key={course.id}
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCourseIds.includes(course.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedCourseIds([...selectedCourseIds, course.id]);
+                                      } else {
+                                        setSelectedCourseIds(selectedCourseIds.filter(id => id !== course.id));
+                                      }
+                                    }}
+                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                  />
+                                  <span className="text-sm text-slate-900 dark:text-slate-100">{course.title}</span>
+                                </label>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
             {/* ─────────────────────────────────────────────────────────────────── */}

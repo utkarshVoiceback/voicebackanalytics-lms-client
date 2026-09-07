@@ -40,7 +40,7 @@ export default function AdminCoursesPage() {
         </div>
         <Link
           href="/admin/courses/create"
-          className="bg-primary-600 hover:bg-primary-500 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)]"
+          className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
         >
           Create Course
         </Link>

@@ -201,9 +201,13 @@ function EditFormContent() {
     setSaving(false);
   };
 
+  const backUrl = returnTo
+    ? (returnTo.includes("?") ? `${returnTo}&batchId=${selectedBatchId}` : `${returnTo}?batchId=${selectedBatchId}`)
+    : "/admin/batches";
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Link href="/admin/batches" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-4 inline-block">
+      <Link href={backUrl} className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-4 inline-block">
         ← Back to Batches
       </Link>
 
@@ -250,7 +254,7 @@ function EditFormContent() {
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Batch A Enrollment Form"
-              required
+              // required
               className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
