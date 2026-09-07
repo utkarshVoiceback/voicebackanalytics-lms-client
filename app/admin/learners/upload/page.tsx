@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
@@ -49,6 +49,14 @@ function UploadContent() {
     fetchBatches();
   }, []);
 
+  useEffect(() => {
+    if (selectedBatchId) {
+      checkFormForBatch(selectedBatchId);
+    } else {
+      setFormTemplate(null);
+    }
+  }, [selectedBatchId]);
+
   const fetchBatches = async () => {
     setLoading(true);
     setError(null);
@@ -65,8 +73,7 @@ function UploadContent() {
     setLoading(false);
   };
 
-  const handleBatchChange = async (batchId: string) => {
-    setSelectedBatchId(batchId);
+  const checkFormForBatch = async (batchId: string) => {
     setFormTemplate(null);
     setFile(null);
     setUploadResults(null);
@@ -160,8 +167,7 @@ function UploadContent() {
               <select
                 id="batch"
                 value={selectedBatchId}
-                onChange={(e) => handleBatchChange(e.target.value)}
-                disabled={loading}
+                onChange={(e) => setSelectedBatchId(e.target.value)}
                 className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">Select a batch...</option>

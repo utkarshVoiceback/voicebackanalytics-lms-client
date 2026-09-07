@@ -31,7 +31,7 @@ function UploadContent() {
 
   // Learners upload state
   const [learnersFile, setLearnersFile] = useState<File | null>(null);
-  const [learnersSelectedBatchId, setLearnersSelectedBatchId] = useState("");
+  const [learnersSelectedBatchId, setLearnersSelectedBatchId] = useState(initialBatchId);
   const [learnersFormTemplate, setLearnersFormTemplate] = useState<any | null>(null);
   const [learnersCheckingForm, setLearnersCheckingForm] = useState(false);
   const [learnersUploading, setLearnersUploading] = useState(false);
@@ -49,6 +49,14 @@ function UploadContent() {
       setFormId("");
     }
   }, [selectedBatchId]);
+
+  useEffect(() => {
+    if (learnersSelectedBatchId) {
+      checkLearnersFormForBatch(learnersSelectedBatchId);
+    } else {
+      setLearnersFormTemplate(null);
+    }
+  }, [learnersSelectedBatchId]);
 
   const fetchBatches = async () => {
     const res = await apiFetch("/batches");
@@ -132,8 +140,11 @@ function UploadContent() {
   };
 
   // Learners upload handlers
-  const handleLearnersBatchChange = async (batchId: string) => {
+  const handleLearnersBatchChange = (batchId: string) => {
     setLearnersSelectedBatchId(batchId);
+  };
+
+  const checkLearnersFormForBatch = async (batchId: string) => {
     setLearnersFormTemplate(null);
     setLearnersFile(null);
     setLearnersUploadResults(null);
@@ -282,12 +293,16 @@ function UploadContent() {
                   ))}
                 </select>
 
-                {formId && !checkingForm && (
+                {selectedBatchId && !checkingForm && (
                   <button
                     type="button"
                     onClick={async () => {
+                      if (!formId) {
+                        dispatch(setEnrollmentError("Please create a form first"));
+                        return;
+                      }
                       try {
-                        const downloadUrl = `${API_BASE_URL}/form-templates/${formId}/download`;
+                        const downloadUrl = `${API_BASE_URL}/form-templates/${formId}/download?type=enrollment`;
                         const response = await fetch(downloadUrl, {
                           method: "GET",
                           headers: { Authorization: `Bearer ${localStorage.getItem("lms_auth_token")}` },
@@ -321,11 +336,6 @@ function UploadContent() {
                 )}
               </div>
               {checkingForm && <p className="text-xs text-slate-500 mt-2">Checking for active form...</p>}
-              {!checkingForm && selectedBatchId && !formId && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                  No form found for this batch. Please add a form first.
-                </p>
-              )}
             </div>
 
             {/* Info Box */}
@@ -515,7 +525,8 @@ function UploadContent() {
                   id="learners-batch"
                   value={learnersSelectedBatchId}
                   onChange={(e) => handleLearnersBatchChange(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  disabled={!!initialBatchId}
+                  className={`w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors ${initialBatchId ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select a batch...</option>
                   {batches.map((batch) => (
