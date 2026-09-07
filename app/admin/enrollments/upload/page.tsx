@@ -541,8 +541,7 @@ function UploadContent() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_SERVER_URL + '/api/v1';
-                        const downloadUrl = `${apiBaseUrl}/form-templates/${learnersFormTemplate.id}/download`;
+                        const downloadUrl = `${API_BASE_URL}/form-templates/${learnersFormTemplate.id}/download`;
                         console.log("Downloading template from:", downloadUrl, "FormID:", learnersFormTemplate.id);
                         const response = await fetch(downloadUrl, {
                           method: "GET",
