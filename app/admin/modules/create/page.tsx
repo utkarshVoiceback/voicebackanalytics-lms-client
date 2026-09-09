@@ -163,62 +163,7 @@ function CreateModuleForm() {
                 />
               </div>
 
-              {/* <div>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Sequential Access</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsSequential(!isSequential)}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
-                  >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isSequential ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
-                    {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
-                  </span>
-                </div>
-              </div> */}
-            </div>
-
-            {/* ── Dependency Section ──────────────────────────────────────────── */}
-            <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
-                    Prerequisite Dependencies
-                  </label>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    Learners must complete all selected modules before starting this one.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHasDependency(!hasDependency);
-                    if (hasDependency) {
-                      setDependencyModuleIds([]);
-                      setSelectedCourseIds([]);
-                    }
-                  }}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${hasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${hasDependency ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
-              </div>
-
-              {hasDependency && (
-                <div className="space-y-5 overflow-visible">
-                  {courseId && (
-                    <div className="relative z-10">
-                      <DependencySelector
-                        courseId={courseId}
-                        selectedIds={dependencyModuleIds}
-                        onChange={setDependencyModuleIds}
-                      />
-                    </div>
-                  )}
-
-                  <div>
+              <div>
                     <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                       Select Courses <span className="text-red-600 dark:text-red-400">*</span>
                     </label>
@@ -276,9 +221,69 @@ function CreateModuleForm() {
                       )}
                     </div>
                   </div>
+
+              {/* <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Sequential Access</label>
+                <div className="flex items-center gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSequential(!isSequential)}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isSequential ? "translate-x-6" : "translate-x-1"}`} />
+                  </button>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
+                  </span>
+                </div>
+              </div> */}
+            </div>
+
+            {/* ── Dependency Section ──────────────────────────────────────────── */}
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                    Prerequisite Dependencies
+                  </label>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                    Learners must complete all selected modules before starting this one.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHasDependency(!hasDependency);
+                    if (hasDependency) {
+                      setDependencyModuleIds([]);
+                      setSelectedCourseIds([]);
+                    }
+                  }}
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${hasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${hasDependency ? "translate-x-6" : "translate-x-1"}`} />
+                </button>
+              </div>
+
+              {hasDependency && (
+                <div className="space-y-5 overflow-visible">
+                  {courseId && (
+                    <div className="relative z-10">
+                      <DependencySelector
+                        courseId={courseId}
+                        selectedIds={dependencyModuleIds}
+                        onChange={setDependencyModuleIds}
+                      />
+                    </div>
+                  )}
+
+                  
                 </div>
               )}
+              
             </div>
+
+
             {/* ─────────────────────────────────────────────────────────────────── */}
 
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-4">
