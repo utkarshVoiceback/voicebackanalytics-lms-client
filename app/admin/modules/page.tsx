@@ -4,12 +4,24 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { setModules, setModuleLoading } from "@/store/moduleSlice";
+import { setModuleLoading } from "@/store/moduleSlice";
+
+interface CourseModuleListItem {
+  id: string;
+  courseModuleId: string;
+  title: string;
+  description: string;
+  status: string;
+  sequenceOrder: number;
+  isSequential: boolean;
+  contentsCount: number;
+}
 
 export default function AdminModulesPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { modules, loading } = useAppSelector((state) => state.module);
+  const { loading } = useAppSelector((state) => state.module);
+  const [modules, setModulesLocal] = useState<CourseModuleListItem[]>([]);
 
   const GROUND_STAFF_COURSE_ID = "25F5B4C7-BE1C-4D1E-9590-205854065B99";
 
@@ -19,9 +31,19 @@ export default function AdminModulesPage() {
 
   const fetchModules = async (courseId: string) => {
     dispatch(setModuleLoading(true));
-    const res = await apiFetch(`/modules?courseId=${courseId}`);
+    const res = await apiFetch(`/courses/${courseId}/modules`);
     if (res.success && res.data) {
-      dispatch(setModules(res.data));
+      const mapped = res.data.map((cm: any) => ({
+        id: cm.moduleId,
+        courseModuleId: cm.courseModuleId,
+        title: cm.moduleName,
+        description: cm.module?.description || cm.description || "",
+        status: cm.status,
+        sequenceOrder: cm.sequenceOrder,
+        isSequential: cm.isSequential,
+        contentsCount: cm.contentsCount
+      }));
+      setModulesLocal(mapped);
     }
     dispatch(setModuleLoading(false));
   };
@@ -89,7 +111,7 @@ export default function AdminModulesPage() {
             {modules.map((module, index) => (
               <div
                 key={module.id}
-                onClick={() => router.push(`/admin/modules/${module.id}`)}
+                onClick={() => router.push(`/admin/modules/${module.id}?courseId=${GROUND_STAFF_COURSE_ID}&courseModuleId=${(module as any).courseModuleId}`)}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-5">
@@ -116,7 +138,7 @@ export default function AdminModulesPage() {
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
-                        {module.contents?.length || 0} content item(s)
+                        {module.contentsCount || 0} content item(s)
                       </span>
                       {module.isSequential && (
                         <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">

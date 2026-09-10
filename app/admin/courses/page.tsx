@@ -1,14 +1,12 @@
 ﻿"use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setCourses, setCourseLoading } from "@/store/courseSlice";
 
 export default function AdminCoursesPage() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const { courses, loading } = useAppSelector((state) => state.course);
 
@@ -75,7 +73,7 @@ export default function AdminCoursesPage() {
 
               <div className="flex flex-col gap-2">
                 <Link
-                  href={`/admin/modules?courseId=${course.id}`}
+                  href={`/admin/courses/manage-modules?courseId=${course.id}&courseName=${encodeURIComponent(course.title)}`}
                   className="w-full text-center bg-slate-300/70 hover:bg-slate-400 dark:bg-slate-700/50 dark:hover:bg-slate-600 text-slate-900 dark:text-white py-2 rounded-lg font-medium transition-colors text-sm"
                 >
                   Manage Modules

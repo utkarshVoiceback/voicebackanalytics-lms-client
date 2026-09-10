@@ -39,20 +39,46 @@ export default function MyModulesPage() {
   const [modules, setModules] = useState<ModuleWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const GROUND_STAFF_COURSE_ID = "25F5B4C7-BE1C-4D1E-9590-205854065B99";
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [courseName, setCourseName] = useState<string>("My Course");
 
   useEffect(() => {
-    fetchModules();
+    fetchLearnerBatchAndModules();
   }, []);
 
-  const fetchModules = async () => {
+  const fetchLearnerBatchAndModules = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Step 1: Fetch learner's batch info to get course ID
+      const profileRes = await apiFetch("/learner/profile");
+      if (!profileRes.success || !profileRes.data?.batch?.courseId) {
+        setError("Unable to determine your enrolled course. Please contact support.");
+        setLoading(false);
+        return;
+      }
+
+      const fetchedCourseId = profileRes.data.batch.courseId;
+      const fetchedCourseName = profileRes.data.batch.course?.title || "My Course";
+
+      setCourseId(fetchedCourseId);
+      setCourseName(fetchedCourseName);
+
+      // Step 2: Fetch modules and progress for the learner's course
+      await fetchModulesForCourse(fetchedCourseId);
+    } catch (err) {
+      setError("Failed to load your profile. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const fetchModulesForCourse = async (course: string) => {
     setLoading(true);
     setError(null);
     try {
       const [modulesRes, progressRes] = await Promise.all([
-        apiFetch(`/modules?courseId=${GROUND_STAFF_COURSE_ID}`),
-        apiFetch(`/modules/progress?courseId=${GROUND_STAFF_COURSE_ID}`),
+        apiFetch(`/modules?courseId=${course}`),
+        apiFetch(`/modules/progress?courseId=${course}`),
       ]);
 
       if (!modulesRes.success || !modulesRes.data) {
@@ -225,7 +251,7 @@ export default function MyModulesPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">My Modules</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Ground Staff</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{courseName}</p>
           </div>
           {modules.length > 0 && (
             <div className="text-right">
@@ -240,7 +266,7 @@ export default function MyModulesPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
             <p className="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
             <button
-              onClick={fetchModules}
+              onClick={fetchLearnerBatchAndModules}
               className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               Try Again
@@ -312,14 +338,14 @@ export default function MyModulesPage() {
                             >
                               {config.label}
                             </span>
-                            {mod.isSequential && (
+                            {/* {mod.isSequential && (
                               <span className="inline-flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                 </svg>
                                 Sequential
                               </span>
-                            )}
+                            )} */}
                           </div>
                         </div>
 

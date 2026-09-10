@@ -6,7 +6,6 @@ import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addModule } from "@/store/moduleSlice";
 import { setCourses } from "@/store/courseSlice";
-import { DependencySelector } from "../components/DependencySelector";
 
 function CreateModuleForm() {
   const router = useRouter();
@@ -14,14 +13,11 @@ function CreateModuleForm() {
   const dispatch = useAppDispatch();
   const { courses } = useAppSelector((state) => state.course);
 
-  const [courseId, setcourseId] = useState(searchParams.get("courseId") || "");
+  const initialCourseId = searchParams.get("courseId") || "";
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [sequenceOrder, setSequenceOrder] = useState<number>(1);
-  const [isSequential, setIsSequential] = useState(true);
-  const [hasDependency, setHasDependency] = useState(false);
-  const [dependencyModuleIds, setDependencyModuleIds] = useState<string[]>([]);
-  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>(initialCourseId ? [initialCourseId] : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCoursesDropdownOpen, setIsCoursesDropdownOpen] = useState(false);
@@ -34,9 +30,6 @@ function CreateModuleForm() {
     const res = await apiFetch("/courses");
     if (res.success && res.data && res.data.length > 0) {
       dispatch(setCourses(res.data));
-      if (!courseId) {
-        setcourseId(res.data[0].id);
-      }
     }
   };
 
@@ -44,43 +37,53 @@ function CreateModuleForm() {
     e.preventDefault();
     setError(null);
 
-    if (!courseId || !title || !sequenceOrder) {
-      setError("course, Title, and Sequence Order are required");
+    if (!title.trim()) {
+      setError("Title is required");
       return;
     }
 
-    if (hasDependency && dependencyModuleIds.length === 0) {
-      setError("Please select at least one prerequisite module, or disable the dependency toggle.");
-      return;
-    }
-
-    if (hasDependency && selectedCourseIds.length === 0) {
-      setError("Please select at least one course, or disable the dependency toggle.");
+    if (selectedCourseIds.length === 0) {
+      setError("Please select at least one course.");
       return;
     }
 
     setLoading(true);
-    const res = await apiFetch("/modules", {
+
+    // Step 1: Create global Module master
+    const moduleRes = await apiFetch("/modules", {
       method: "POST",
-      body: JSON.stringify({
-        courseId,
-        title,
-        description,
-        sequenceOrder,
-        isSequential,
-        hasDependency,
-        dependencyModuleIds: hasDependency ? dependencyModuleIds : [],
-        courseIds: hasDependency ? selectedCourseIds : [],
-      }),
+      body: JSON.stringify({ title: title.trim(), description: description.trim() }),
     });
 
-    if (res.success && res.data) {
-      dispatch(addModule(res.data));
-      router.push("/admin/modules");
-    } else {
-      setError(res.message || "Failed to create module");
+    if (!moduleRes.success || !moduleRes.data) {
+      setError(moduleRes.message || "Failed to create module");
+      setLoading(false);
+      return;
     }
+
+    const newModuleId = moduleRes.data.id;
+
+    // Step 2: Add the new module to each selected course
+    let hasError = false;
+    for (const courseId of selectedCourseIds) {
+      const addRes = await apiFetch(`/courses/${courseId}/modules`, {
+        method: "POST",
+        body: JSON.stringify({ moduleId: newModuleId }),
+      });
+      if (!addRes.success) {
+        hasError = true;
+        console.error(`Failed to add module to course ${courseId}:`, addRes.message);
+      }
+    }
+
     setLoading(false);
+    
+    if (hasError) {
+      setError("Module created, but failed to add to one or more selected courses.");
+    } else {
+      dispatch(addModule(moduleRes.data));
+      router.push("/admin/modules");
+    }
   };
 
   return (
@@ -113,16 +116,6 @@ function CreateModuleForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Course Selection (Hidden) */}
-            <div className="hidden">
-              <select value={courseId} onChange={(e) => setcourseId(e.target.value)}>
-                <option value="">-- Select a course --</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>{course.title}</option>
-                ))}
-              </select>
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
                 Module Title <span className="text-red-600 dark:text-red-400">*</span>
@@ -148,143 +141,64 @@ function CreateModuleForm() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                  Display Sequence Order <span className="text-red-600 dark:text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  min={1}
-                  value={sequenceOrder}
-                  onChange={(e) => setSequenceOrder(Number(e.target.value))}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                Select Courses <span className="text-red-600 dark:text-red-400">*</span>
+              </label>
+              <div className="relative z-20">
+                <button
+                  type="button"
+                  onClick={() => setIsCoursesDropdownOpen(!isCoursesDropdownOpen)}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors flex items-center justify-between"
+                >
+                  <span className="text-sm">
+                    {selectedCourseIds.length === 0
+                      ? "Select courses..."
+                      : `${selectedCourseIds.length} course${selectedCourseIds.length > 1 ? "s" : ""} selected`}
+                  </span>
+                  <svg
+                    className={`w-5 h-5 transition-transform ${isCoursesDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </button>
 
-              <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
-                      Select Courses <span className="text-red-600 dark:text-red-400">*</span>
-                    </label>
-                    <div className="relative z-20">
-                      <button
-                        type="button"
-                        onClick={() => setIsCoursesDropdownOpen(!isCoursesDropdownOpen)}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors flex items-center justify-between"
-                      >
-                        <span className="text-sm">
-                          {selectedCourseIds.length === 0
-                            ? "Select courses..."
-                            : `${selectedCourseIds.length} course${selectedCourseIds.length > 1 ? "s" : ""} selected`}
-                        </span>
-                        <svg
-                          className={`w-5 h-5 transition-transform ${isCoursesDropdownOpen ? "rotate-180" : ""}`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                      </button>
-
-                      {isCoursesDropdownOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg z-20">
-                          <div className="max-h-48 overflow-y-auto">
-                            {courses.length === 0 ? (
-                              <p className="px-4 py-3 text-sm text-slate-500">No courses available</p>
-                            ) : (
-                              courses.map((course) => (
-                                <label
-                                  key={course.id}
-                                  className="flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedCourseIds.includes(course.id)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setSelectedCourseIds([...selectedCourseIds, course.id]);
-                                      } else {
-                                        setSelectedCourseIds(selectedCourseIds.filter(id => id !== course.id));
-                                      }
-                                    }}
-                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                  />
-                                  <span className="text-sm text-slate-900 dark:text-slate-100">{course.title}</span>
-                                </label>
-                              ))
-                            )}
-                          </div>
-                        </div>
+                {isCoursesDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg z-20">
+                    <div className="max-h-48 overflow-y-auto">
+                      {courses.length === 0 ? (
+                        <p className="px-4 py-3 text-sm text-slate-500">No courses available</p>
+                      ) : (
+                        courses.map((course) => (
+                          <label
+                            key={course.id}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedCourseIds.includes(course.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedCourseIds([...selectedCourseIds, course.id]);
+                                } else {
+                                  setSelectedCourseIds(selectedCourseIds.filter(id => id !== course.id));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            />
+                            <span className="text-sm text-slate-900 dark:text-slate-100">{course.title}</span>
+                          </label>
+                        ))
                       )}
                     </div>
                   </div>
-
-              {/* <div>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">Sequential Access</label>
-                <div className="flex items-center gap-3 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsSequential(!isSequential)}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isSequential ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
-                  >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isSequential ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
-                    {isSequential ? "Enabled — Requires previous module completion" : "Disabled — Open access"}
-                  </span>
-                </div>
-              </div> */}
-            </div>
-
-            {/* ── Dependency Section ──────────────────────────────────────────── */}
-            <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
-                    Prerequisite Dependencies
-                  </label>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    Learners must complete all selected modules before starting this one.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHasDependency(!hasDependency);
-                    if (hasDependency) {
-                      setDependencyModuleIds([]);
-                      setSelectedCourseIds([]);
-                    }
-                  }}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${hasDependency ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${hasDependency ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
+                )}
               </div>
-
-              {hasDependency && (
-                <div className="space-y-5 overflow-visible">
-                  {courseId && (
-                    <div className="relative z-10">
-                      <DependencySelector
-                        courseId={courseId}
-                        selectedIds={dependencyModuleIds}
-                        onChange={setDependencyModuleIds}
-                      />
-                    </div>
-                  )}
-
-                  
-                </div>
-              )}
-              
             </div>
-
-
-            {/* ─────────────────────────────────────────────────────────────────── */}
 
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-4">
               <button
