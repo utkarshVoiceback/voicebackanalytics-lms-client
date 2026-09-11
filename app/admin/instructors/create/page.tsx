@@ -10,27 +10,31 @@ export default function CreateInstructorPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  
+  const [modulesLoading, setModulesLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
     email: "",
+    courseIds: [] as string[],
     batchIds: [] as string[],
     moduleIds: [] as string[],
   });
 
+  const [allCourses, setAllCourses] = useState<any[]>([]);
   const [allBatches, setAllBatches] = useState<any[]>([]);
-  const [allModules, setAllModules] = useState<any[]>([]);
+  // courseId -> modules returned by GET /courses/:id/modules
+  const [courseModulesMap, setCourseModulesMap] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [batchesRes, modulesRes] = await Promise.all([
+        const [coursesRes, batchesRes] = await Promise.all([
+          apiFetch("/courses"),
           apiFetch("/batches"),
-          apiFetch("/modules/all")
         ]);
+        if (coursesRes.success) setAllCourses(coursesRes.data);
         if (batchesRes.success) setAllBatches(batchesRes.data);
-        if (modulesRes.success) setAllModules(modulesRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -40,43 +44,88 @@ export default function CreateInstructorPage() {
     fetchData();
   }, []);
 
-  const batchOptions: Option[] = useMemo(() => {
-    return allBatches.map(b => ({
-      id: b.id,
-      label: b.batchTitle,
-      group: b.course?.title
-    }));
-  }, [allBatches]);
-
-  // Context-aware modules: only modules belonging to courses of selected batches
-  const availableModulesOptions: Option[] = useMemo(() => {
-    if (formData.batchIds.length === 0) return [];
-    
-    const selectedCourseIds = new Set(
-      allBatches
-        .filter(b => formData.batchIds.includes(b.id))
-        .map(b => b.courseId)
-    );
-
-    return allModules
-      .filter(m => selectedCourseIds.has(m.courseId))
-      .map(m => ({
-        id: m.id,
-        label: m.title,
-        group: m.course?.title
-      }));
-  }, [formData.batchIds, allBatches, allModules]);
-
-  // Whenever selected batches change, we must remove moduleIds that are no longer valid
+  // Fetch modules for any newly selected course that isn't cached yet
   useEffect(() => {
-    if (formData.moduleIds.length > 0) {
-      const validModuleIds = new Set(availableModulesOptions.map(m => m.id));
-      const newModuleIds = formData.moduleIds.filter(id => validModuleIds.has(id));
-      if (newModuleIds.length !== formData.moduleIds.length) {
-        setFormData(prev => ({ ...prev, moduleIds: newModuleIds }));
+    const idsToFetch = formData.courseIds.filter((id) => !(id in courseModulesMap));
+    if (idsToFetch.length === 0) return;
+
+    let cancelled = false;
+    const loadModules = async () => {
+      setModulesLoading(true);
+      try {
+        const results = await Promise.all(
+          idsToFetch.map((id) => apiFetch(`/courses/${id}/modules`))
+        );
+        if (cancelled) return;
+        setCourseModulesMap((prev) => {
+          const next = { ...prev };
+          idsToFetch.forEach((id, idx) => {
+            const res = results[idx];
+            next[id] = res.success && res.data ? res.data : [];
+          });
+          return next;
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setModulesLoading(false);
       }
-    }
-  }, [availableModulesOptions, formData.moduleIds]);
+    };
+    loadModules();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.courseIds, courseModulesMap]);
+
+  const courseOptions: Option[] = useMemo(() => {
+    return allCourses.map((c) => ({ id: c.id, label: c.title }));
+  }, [allCourses]);
+
+  // Batches are restricted to the selected courses (Batch.courseId is a direct column)
+  const batchOptions: Option[] = useMemo(() => {
+    if (formData.courseIds.length === 0) return [];
+    const selectedCourseIds = new Set(formData.courseIds);
+    return allBatches
+      .filter((b) => selectedCourseIds.has(b.courseId))
+      .map((b) => ({ id: b.id, label: b.batchTitle, group: b.course?.title }));
+  }, [allBatches, formData.courseIds]);
+
+  // Modules are combined across all selected courses (via CourseModule mapping fetched per course)
+  const availableModulesOptions: Option[] = useMemo(() => {
+    if (formData.courseIds.length === 0) return [];
+    const seen = new Map<string, Option>();
+    formData.courseIds.forEach((courseId) => {
+      const courseTitle = allCourses.find((c) => c.id === courseId)?.title;
+      const mods = courseModulesMap[courseId] || [];
+      mods.forEach((m: any) => {
+        if (!seen.has(m.moduleId)) {
+          seen.set(m.moduleId, { id: m.moduleId, label: m.moduleName, group: courseTitle });
+        }
+      });
+    });
+    return Array.from(seen.values());
+  }, [formData.courseIds, courseModulesMap, allCourses]);
+
+  // Clear batches that are no longer valid when the selected courses change
+  useEffect(() => {
+    const validBatchIds = new Set(batchOptions.map((o) => o.id));
+    setFormData((prev) => {
+      const newBatchIds = prev.batchIds.filter((id) => validBatchIds.has(id));
+      if (newBatchIds.length === prev.batchIds.length) return prev;
+      return { ...prev, batchIds: newBatchIds };
+    });
+  }, [batchOptions]);
+
+  // Clear modules that are no longer valid when the selected courses change
+  useEffect(() => {
+    const validModuleIds = new Set(availableModulesOptions.map((o) => o.id));
+    setFormData((prev) => {
+      const newModuleIds = prev.moduleIds.filter((id) => validModuleIds.has(id));
+      if (newModuleIds.length === prev.moduleIds.length) return prev;
+      return { ...prev, moduleIds: newModuleIds };
+    });
+  }, [availableModulesOptions]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -84,9 +133,10 @@ export default function CreateInstructorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.courseIds.length === 0) return window.alert("Please select at least one course.");
     if (formData.batchIds.length === 0) return window.alert("Please select at least one batch.");
     if (formData.moduleIds.length === 0) return window.alert("Please select at least one module.");
-    
+
     setLoading(true);
 
     try {
@@ -169,16 +219,38 @@ export default function CreateInstructorPage() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Assigned Courses <span className="text-red-500">*</span>
+            </label>
+            <MultiSelect
+              options={courseOptions}
+              selectedIds={formData.courseIds}
+              onChange={(ids) => setFormData({ ...formData, courseIds: ids })}
+              placeholder={courseOptions.length === 0 ? "No courses available" : "Select courses..."}
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Select the courses this instructor will be responsible for. Available batches and modules depend on this selection.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Assigned Batches <span className="text-red-500">*</span>
             </label>
             <MultiSelect
               options={batchOptions}
               selectedIds={formData.batchIds}
               onChange={(ids) => setFormData({ ...formData, batchIds: ids })}
-              placeholder={batchOptions.length === 0 ? "No batches available" : "Select batches..."}
+              placeholder={
+                formData.courseIds.length === 0
+                  ? "Select courses first"
+                  : batchOptions.length === 0
+                  ? "No batches available for selected courses"
+                  : "Select batches..."
+              }
+              disabled={formData.courseIds.length === 0}
             />
             <p className="text-xs text-slate-500 mt-1">
-              Instructor will only have access to learners within these batches.
+              Only batches belonging to the selected courses are shown. Instructor will only have access to learners within these batches.
             </p>
           </div>
 
@@ -190,11 +262,19 @@ export default function CreateInstructorPage() {
               options={availableModulesOptions}
               selectedIds={formData.moduleIds}
               onChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
-              placeholder={formData.batchIds.length === 0 ? "Select batches first" : (availableModulesOptions.length === 0 ? "No modules available for selected batches" : "Select modules...")}
-              disabled={formData.batchIds.length === 0}
+              placeholder={
+                formData.courseIds.length === 0
+                  ? "Select courses first"
+                  : modulesLoading
+                  ? "Loading modules..."
+                  : availableModulesOptions.length === 0
+                  ? "No modules available for selected courses"
+                  : "Select modules..."
+              }
+              disabled={formData.courseIds.length === 0 || modulesLoading}
             />
             <p className="text-xs text-slate-500 mt-1">
-              Select batches above to see available modules. Instructor will only see these modules within their assigned batches.
+              Only modules belonging to the selected courses are shown. Instructor will only see these modules within their assigned batches.
             </p>
           </div>
 

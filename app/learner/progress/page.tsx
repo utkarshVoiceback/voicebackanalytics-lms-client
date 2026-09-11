@@ -80,10 +80,11 @@ export default function MyProgressPage() {
 
         let isLocked = false;
         if (mod.isSequential && index > 0) {
-          const prevMod = sortedMods
-            .slice(0, index)
-            .reverse()
-            .find((m: any) => m.isSequential);
+          // const prevMod = sortedMods
+          //   .slice(0, index)
+          //   .reverse()
+          //   .find((m: any) => m.isSequential);
+          let prevMod: any = null;
           if (prevMod) {
             const prevProgress = progressMap[prevMod.id];
             if (!prevProgress || prevProgress.status !== "COMPLETED") {

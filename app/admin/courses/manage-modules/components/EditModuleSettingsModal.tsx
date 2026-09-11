@@ -36,7 +36,6 @@ export default function EditModuleSettingsModal({
   courseId,
   onUpdate,
 }: EditModuleSettingsModalProps) {
-  const [isSequential, setIsSequential] = useState(module.isSequential);
   const [displaySequenceOrder, setDisplaySequenceOrder] = useState(true);
   const [dependencyCourseModuleIds, setDependencyCourseModuleIds] = useState<string[]>([]);
   const [availableModules, setAvailableModules] = useState<CourseModule[]>([]);
@@ -45,7 +44,6 @@ export default function EditModuleSettingsModal({
 
   useEffect(() => {
     if (isOpen) {
-      setIsSequential(module.isSequential);
       setDisplaySequenceOrder(true);
       setError(null);
       setDependencyCourseModuleIds(
@@ -70,52 +68,34 @@ export default function EditModuleSettingsModal({
     setError(null);
 
     try {
-      // Update module settings
-      const settingsRes = await apiFetch(
-        `/courses/${courseId}/modules/${module.courseModuleId}`,
+      // Update prerequisite dependencies (isSequential is disabled at the code
+      // level and is never sent as true — dependencies work independently of it)
+      const depsRes = await apiFetch(
+        `/courses/${courseId}/modules/${module.courseModuleId}/dependencies`,
         {
           method: "PUT",
           body: JSON.stringify({
-            isSequential,
+            dependencyCourseModuleIds,
           }),
         }
       );
 
-      if (!settingsRes.success) {
-        throw new Error(settingsRes.message || "Failed to update module settings");
-      }
-
-      // Update dependencies if sequential is enabled
-      if (isSequential) {
-        const depsRes = await apiFetch(
-          `/courses/${courseId}/modules/${module.courseModuleId}/dependencies`,
-          {
-            method: "PUT",
-            body: JSON.stringify({
-              dependencyCourseModuleIds,
-            }),
-          }
-        );
-
-        if (!depsRes.success) {
-          throw new Error(depsRes.message || "Failed to update dependencies");
-        }
+      if (!depsRes.success) {
+        throw new Error(depsRes.message || "Failed to update dependencies");
       }
 
       onUpdate({
         ...module,
-        isSequential,
-        dependencies: isSequential
-          ? dependencyCourseModuleIds.map((id) => {
-              const depModule = availableModules.find(
-                (m) => m.courseModuleId === id
-              );
-              return {
-                courseModuleId: id,
-                moduleName: depModule?.moduleName || "",
-              };
-            })
-          : [],
+        isSequential: false,
+        dependencies: dependencyCourseModuleIds.map((id) => {
+          const depModule = availableModules.find(
+            (m) => m.courseModuleId === id
+          );
+          return {
+            courseModuleId: id,
+            moduleName: depModule?.moduleName || "",
+          };
+        }),
       });
       onClose();
     } catch (err: any) {
@@ -189,36 +169,19 @@ export default function EditModuleSettingsModal({
 
         {/* Content */}
         <div className="space-y-6 mb-8">
-          {/* Prerequisite Dependencies Toggle */}
+          {/* Prerequisite Dependencies */}
           <div className="space-y-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Prerequisite Dependencies
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  Learners must complete selected modules before this one.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsSequential(!isSequential)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                  isSequential
-                    ? "bg-blue-600"
-                    : "bg-slate-300 dark:bg-slate-600"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    isSequential ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
+            <div className="flex-1">
+              <h3 className="font-semibold text-slate-900 dark:text-white">
+                Prerequisite Dependencies
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Learners must complete selected modules before this one.
+              </p>
             </div>
 
-            {/* Dependency Selector - Show when Sequential is ON */}
-            {isSequential && (
-              <div className="border-l-2 border-blue-400 dark:border-blue-600 pl-4">
+            {/* Dependency Selector */}
+            <div className="border-l-2 border-blue-400 dark:border-blue-600 pl-4">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Select prerequisite modules
                 </label>
@@ -317,8 +280,7 @@ export default function EditModuleSettingsModal({
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Display Sequence Order Option */}

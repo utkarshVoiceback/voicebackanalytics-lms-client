@@ -79,7 +79,7 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ id: str
   // Edit state (Course-specific Module)
   const [editingCourseModule, setEditingCourseModule] = useState(false);
   const [editSequence, setEditSequence] = useState(1);
-  const [editIsSequential, setEditIsSequential] = useState(true);
+  const [editIsSequential, setEditIsSequential] = useState(false);
   const [editHasDependency, setEditHasDependency] = useState(false);
   const [editDependencyIds, setEditDependencyIds] = useState<string[]>([]);
   const [saveCourseModuleLoading, setSaveCourseModuleLoading] = useState(false);

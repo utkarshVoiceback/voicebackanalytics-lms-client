@@ -6,14 +6,11 @@ import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setModuleLoading } from "@/store/moduleSlice";
 
-interface CourseModuleListItem {
+interface ModuleListItem {
   id: string;
-  courseModuleId: string;
   title: string;
   description: string;
   status: string;
-  sequenceOrder: number;
-  isSequential: boolean;
   contentsCount: number;
 }
 
@@ -21,27 +18,22 @@ export default function AdminModulesPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.module);
-  const [modules, setModulesLocal] = useState<CourseModuleListItem[]>([]);
-
-  const GROUND_STAFF_COURSE_ID = "25F5B4C7-BE1C-4D1E-9590-205854065B99";
+  const [modules, setModulesLocal] = useState<ModuleListItem[]>([]);
 
   useEffect(() => {
-    fetchModules(GROUND_STAFF_COURSE_ID);
+    fetchModules();
   }, []);
 
-  const fetchModules = async (courseId: string) => {
+  const fetchModules = async () => {
     dispatch(setModuleLoading(true));
-    const res = await apiFetch(`/courses/${courseId}/modules`);
+    const res = await apiFetch(`/modules/all`);
     if (res.success && res.data) {
-      const mapped = res.data.map((cm: any) => ({
-        id: cm.moduleId,
-        courseModuleId: cm.courseModuleId,
-        title: cm.moduleName,
-        description: cm.module?.description || cm.description || "",
-        status: cm.status,
-        sequenceOrder: cm.sequenceOrder,
-        isSequential: cm.isSequential,
-        contentsCount: cm.contentsCount
+      const mapped = res.data.map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        description: m.description || "",
+        status: m.status,
+        contentsCount: m.contentsCount || 0,
       }));
       setModulesLocal(mapped);
     }
@@ -61,8 +53,7 @@ export default function AdminModulesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Learning Modules</h1>
-            {/* <p className="text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p> */}
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage course-specific learning modules and sequence order</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">All master modules, regardless of course assignment</p>
           </div>
           <button
             onClick={() => router.push("/admin/modules/create")}
@@ -92,9 +83,9 @@ export default function AdminModulesPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No modules yet</h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">Create your first learning module for Ground Staff</p>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">Create your first learning module</p>
             <button
-              onClick={() => router.push(`/admin/modules/create?courseId=${GROUND_STAFF_COURSE_ID}`)}
+              onClick={() => router.push("/admin/modules/create")}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -111,13 +102,13 @@ export default function AdminModulesPage() {
             {modules.map((module, index) => (
               <div
                 key={module.id}
-                onClick={() => router.push(`/admin/modules/${module.id}?courseId=${GROUND_STAFF_COURSE_ID}&courseModuleId=${(module as any).courseModuleId}`)}
+                onClick={() => router.push(`/admin/modules/${module.id}`)}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-5">
-                  {/* Sequence Number */}
+                  {/* Position Number */}
                   <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-lg">
-                    {module.sequenceOrder}
+                    {index + 1}
                   </div>
 
                   {/* Module Info */}
@@ -140,14 +131,6 @@ export default function AdminModulesPage() {
                         </svg>
                         {module.contentsCount || 0} content item(s)
                       </span>
-                      {module.isSequential && (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                          </svg>
-                          Sequential
-                        </span>
-                      )}
                     </div>
                   </div>
 
