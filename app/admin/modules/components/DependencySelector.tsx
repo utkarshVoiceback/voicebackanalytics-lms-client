@@ -10,12 +10,12 @@ interface Module {
 
 interface Props {
   courseId: string;
-  currentModuleId?: string; // the module being created/edited
+  excludeCourseModuleId?: string; // the module being created/edited
   selectedIds: string[];
   onChange: (ids: string[]) => void;
 }
 
-export function DependencySelector({ courseId, currentModuleId, selectedIds, onChange }: Props) {
+export function DependencySelector({ courseId, excludeCourseModuleId, selectedIds, onChange }: Props) {
   const [modules, setModules] = useState<Module[]>([]);
   const [forbiddenIds, setForbiddenIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -40,14 +40,14 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
       .finally(() => setLoading(false));
   }, [courseId]);
 
-  // Fetch forbidden IDs (circular protection) whenever currentModuleId is known
+  // Fetch forbidden IDs (circular protection) whenever excludeCourseModuleId is known
   useEffect(() => {
-    if (!currentModuleId) {
+    if (!excludeCourseModuleId) {
       // For new module creation: only self is forbidden
       setForbiddenIds(new Set());
       return;
     }
-    fetch(`${API_BASE_URL}/modules/${currentModuleId}/forbidden-dependencies`, { headers })
+    fetch(`${API_BASE_URL}/modules/${excludeCourseModuleId}/forbidden-dependencies`, { headers })
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.data?.forbiddenIds) {
@@ -56,9 +56,9 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
       })
       .catch(() => {
         // Graceful fallback: at minimum exclude self
-        if (currentModuleId) setForbiddenIds(new Set([currentModuleId]));
+        if (excludeCourseModuleId) setForbiddenIds(new Set([excludeCourseModuleId]));
       });
-  }, [currentModuleId]);
+  }, [excludeCourseModuleId]);
 
   // Close on outside click
   useEffect(() => {
@@ -72,8 +72,8 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
   }, []);
 
   const filtered = modules
-    .filter((m) => m.id !== currentModuleId && !forbiddenIds.has(m.id))
-    .filter((m) => m.title.toLowerCase().includes(search.toLowerCase()));
+    .filter((m) => m.id && m.id !== excludeCourseModuleId && !forbiddenIds.has(m.id))
+    .filter((m) => m.title && m.title.toLowerCase().includes(search.toLowerCase()));
 
   const toggle = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -85,7 +85,7 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
 
   const remove = (id: string) => onChange(selectedIds.filter((x) => x !== id));
 
-  const selectedModules = modules.filter((m) => selectedIds.includes(m.id));
+  const selectedModules = modules.filter((m) => m.id && selectedIds.includes(m.id));
 
   return (
     <div className="space-y-3" ref={dropRef}>
@@ -97,7 +97,7 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
               key={m.id}
               className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full border border-blue-200 dark:border-blue-700"
             >
-              {m.title}
+              {m.title || "Untitled Module"}
               <button
                 type="button"
                 onClick={() => remove(m.id)}
@@ -183,7 +183,7 @@ export function DependencySelector({ courseId, currentModuleId, selectedIds, onC
 
                       {/* Module title */}
                       <span className="text-slate-800 dark:text-slate-200">
-                        {m.title}
+                        {m.title || "Untitled Module"}
                       </span>
                     </button>
                   );

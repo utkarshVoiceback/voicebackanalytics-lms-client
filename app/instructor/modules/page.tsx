@@ -65,7 +65,6 @@ export default function InstructorModulesPage() {
                 <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="px-6 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Module Title</th>
                   <th className="px-6 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Course</th>
-                  <th className="px-6 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Order</th>
                   <th className="px-6 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
                 </tr>
@@ -75,7 +74,6 @@ export default function InstructorModulesPage() {
                   <tr key={module.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{module.title}</td>
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{module.course?.title || "—"}</td>
-                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{module.sequenceOrder}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                         module.status === "ACTIVE"
