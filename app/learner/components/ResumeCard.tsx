@@ -55,8 +55,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
     };
   }, []);
 
-  const ALLOWED_TYPES = ["application/pdf", "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+  const ALLOWED_TYPES = ["application/pdf"];
   const MAX_SIZE_MB = 10;
 
   const getToken = () => typeof window !== "undefined" ? localStorage.getItem("lms_auth_token") : null;
@@ -67,7 +66,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
 
     // Client-side validation
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setUploadError("Only PDF, DOC, or DOCX files are allowed.");
+      setUploadError("Only PDF files are allowed.");
       e.target.value = "";
       return;
     }
@@ -223,7 +222,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
               </svg>
             </div>
             <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">No Resume Uploaded</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">Upload your resume in PDF, DOC, or DOCX format (max {MAX_SIZE_MB}MB)</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">Upload your resume in PDF format only (max {MAX_SIZE_MB}MB)</p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button
                 onClick={handleDownloadTemplate}
@@ -242,7 +241,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
                 <input
                   ref={fileRef}
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf"
                   className="hidden"
                   onChange={handleFileChange}
                   disabled={uploading}
@@ -317,7 +316,7 @@ export default function LearnerResumeCard({ resume, onResumeChange }: ResumeCard
                     <input
                       ref={fileRef}
                       type="file"
-                      accept=".pdf,.doc,.docx"
+                      accept=".pdf"
                       className="hidden"
                       onChange={handleFileChange}
                       disabled={uploading}

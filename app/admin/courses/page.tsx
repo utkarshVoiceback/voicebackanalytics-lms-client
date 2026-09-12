@@ -38,7 +38,7 @@ export default function AdminCoursesPage() {
         </div>
         <Link
           href="/admin/courses/create"
-          className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
         >
           Create Course
         </Link>
@@ -53,7 +53,7 @@ export default function AdminCoursesPage() {
           {courses.map((course) => (
             <div
               key={course.id}
-              className="bg-slate-100/70 dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-300 dark:border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-slate-200/70 dark:hover:bg-[#1e293b]/80 hover:border-slate-400 dark:hover:border-slate-600/50"
+              className="bg-slate-100/70 dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-300 dark:border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-slate-200/70 dark:hover:bg-[#1e293b]/80 hover:border-slate-400 dark:hover:border-slate-600/50 flex flex-col h-full"
             >
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1 flex-1 pr-4" title={course.title}>
@@ -67,14 +67,14 @@ export default function AdminCoursesPage() {
                   {course.status}
                 </span>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 flex-1">
                 {course.description || "No description provided."}
               </p>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mt-auto">
                 <Link
                   href={`/admin/courses/manage-modules?courseId=${course.id}&courseName=${encodeURIComponent(course.title)}`}
-                  className="w-full text-center bg-slate-300/70 hover:bg-slate-400 dark:bg-slate-700/50 dark:hover:bg-slate-600 text-slate-900 dark:text-white py-2 rounded-lg font-medium transition-colors text-sm"
+                  className="px-6 py-2 bg-slate-300/70 hover:bg-slate-400 dark:bg-slate-700/50 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors text-sm text-center"
                 >
                   Manage Modules
                 </Link>
