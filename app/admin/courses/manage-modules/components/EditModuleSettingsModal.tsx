@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 
 interface Module {
@@ -19,6 +19,7 @@ interface CourseModule {
   moduleName: string;
   sequenceOrder: number;
   isSequential: boolean;
+  dependencies?: { courseModuleId: string }[];
 }
 
 interface EditModuleSettingsModalProps {
@@ -38,7 +39,9 @@ export default function EditModuleSettingsModal({
 }: EditModuleSettingsModalProps) {
   const [displaySequenceOrder, setDisplaySequenceOrder] = useState(true);
   const [dependencyCourseModuleIds, setDependencyCourseModuleIds] = useState<string[]>([]);
-  const [availableModules, setAvailableModules] = useState<CourseModule[]>([]);
+  // Raw, unfiltered list of every module in the course (including this one), each with its
+  // own existing `dependencies` — needed to compute the reverse/circular-dependency graph below.
+  const [allCourseModules, setAllCourseModules] = useState<CourseModule[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,19 +52,55 @@ export default function EditModuleSettingsModal({
       setDependencyCourseModuleIds(
         module.dependencies?.map((d) => d.courseModuleId) || []
       );
-      fetchAvailableModules();
+      fetchCourseModules();
     }
   }, [isOpen, module]);
 
-  const fetchAvailableModules = async () => {
+  const fetchCourseModules = async () => {
     const res = await apiFetch(`/courses/${courseId}/modules`);
     if (res.success && res.data) {
-      const modules = res.data.filter(
-        (m: CourseModule) => m.courseModuleId !== module.courseModuleId
-      );
-      setAvailableModules(modules);
+      setAllCourseModules(res.data);
     }
   };
+
+  // Modules that would create a reverse/circular dependency if picked as a prerequisite
+  // for `module` are excluded entirely — i.e. any module that already (directly or
+  // transitively) depends on `module`. Selecting one of those here would close a cycle
+  // (e.g. Python depends on Java -> Python must not be selectable as a prerequisite of Java).
+  const availableModules = useMemo(() => {
+    const forwardAdj = new Map<string, string[]>();
+    allCourseModules.forEach((cm) => {
+      forwardAdj.set(cm.courseModuleId, (cm.dependencies || []).map((d) => d.courseModuleId));
+    });
+
+    const reverseAdj = new Map<string, string[]>();
+    forwardAdj.forEach((deps, id) => {
+      deps.forEach((depId) => {
+        if (!reverseAdj.has(depId)) reverseAdj.set(depId, []);
+        reverseAdj.get(depId)!.push(id);
+      });
+    });
+
+    // BFS from `module` along reverse edges: finds every module that (directly or
+    // transitively) depends on `module`, i.e. every module that would form a cycle
+    // if it were added as a new prerequisite of `module`.
+    const blocked = new Set<string>();
+    const queue = [module.courseModuleId];
+    while (queue.length > 0) {
+      const nodeId = queue.shift()!;
+      const dependents = reverseAdj.get(nodeId) || [];
+      for (const depId of dependents) {
+        if (!blocked.has(depId)) {
+          blocked.add(depId);
+          queue.push(depId);
+        }
+      }
+    }
+
+    return allCourseModules.filter(
+      (cm) => cm.courseModuleId !== module.courseModuleId && !blocked.has(cm.courseModuleId)
+    );
+  }, [allCourseModules, module.courseModuleId]);
 
   const handleSave = async () => {
     setSaving(true);
