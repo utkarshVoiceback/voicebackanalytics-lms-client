@@ -131,8 +131,8 @@ export default function ManageModulesPage() {
               </svg>
               Back
             </button>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Manage Modules</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">{courseName}</p>
+            <h1 className=" text-3xl dark:text-white text-slate-900  mt-1">{courseName}</h1>
+            <p className="font-bold text-slate-400 dark:text-white">Manage Modules</p>
           </div>
         </div>
 

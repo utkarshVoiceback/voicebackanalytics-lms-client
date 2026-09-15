@@ -226,6 +226,21 @@ const icons = {
       />
     </svg>
   ),
+  courses: (
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.7}
+      stroke="currentColor"
+      className="w-full h-full"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.566.034-1.08.16-1.556.309m-1.671 2.257c-.328.181-.53.521-.53.905v12.75c0 1.248 1.008 2.25 2.25 2.25h13.5c1.242 0 2.25-1.002 2.25-2.25V6.908c0-.384-.202-.724-.53-.905m-2.217-1.384c.514 0 1.014-.209 1.382-.571l.834-.834a1.5 1.5 0 0 0-2.125-2.125l-.834.834c-.36.368-.571.868-.571 1.382m0 0a1.5 1.5 0 0 1-1.382.571m0 0a1.5 1.5 0 0 0-1.382-.571m0 0a1.5 1.5 0 0 1-1.382.571m7.5-6.75h-7.5a1.5 1.5 0 0 0-1.5 1.5v9.75a1.5 1.5 0 0 0 1.5 1.5h7.5a1.5 1.5 0 0 0 1.5-1.5v-9.75a1.5 1.5 0 0 0-1.5-1.5Z"
+      />
+    </svg>
+  ),
   logout: (
     <svg
       fill="none"
@@ -438,6 +453,16 @@ const learnerNav: { main: NavItem[]; sections: NavSection[] } = {
     },
   ],
   sections: [
+    {
+      title: "My Courses",
+      items: [
+        {
+          href: "/learner/courses",
+          label: "Course",
+          icon: icons.courses,
+        },
+      ],
+    },
     {
       title: "My Training",
       items: [

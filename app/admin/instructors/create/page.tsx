@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
-import { MultiSelect, Option } from "@/app/components/MultiSelect";
+import { HierarchicalInstructorSelector } from "@/app/components/HierarchicalInstructorSelector";
 
 export default function CreateInstructorPage() {
   const router = useRouter();
@@ -78,54 +78,8 @@ export default function CreateInstructorPage() {
     };
   }, [formData.courseIds, courseModulesMap]);
 
-  const courseOptions: Option[] = useMemo(() => {
-    return allCourses.map((c) => ({ id: c.id, label: c.title }));
-  }, [allCourses]);
 
-  // Batches are restricted to the selected courses (Batch.courseId is a direct column)
-  const batchOptions: Option[] = useMemo(() => {
-    if (formData.courseIds.length === 0) return [];
-    const selectedCourseIds = new Set(formData.courseIds);
-    return allBatches
-      .filter((b) => selectedCourseIds.has(b.courseId))
-      .map((b) => ({ id: b.id, label: b.batchTitle, group: b.course?.title }));
-  }, [allBatches, formData.courseIds]);
 
-  // Modules are combined across all selected courses (via CourseModule mapping fetched per course)
-  const availableModulesOptions: Option[] = useMemo(() => {
-    if (formData.courseIds.length === 0) return [];
-    const seen = new Map<string, Option>();
-    formData.courseIds.forEach((courseId) => {
-      const courseTitle = allCourses.find((c) => c.id === courseId)?.title;
-      const mods = courseModulesMap[courseId] || [];
-      mods.forEach((m: any) => {
-        if (!seen.has(m.moduleId)) {
-          seen.set(m.moduleId, { id: m.moduleId, label: m.moduleName, group: courseTitle });
-        }
-      });
-    });
-    return Array.from(seen.values());
-  }, [formData.courseIds, courseModulesMap, allCourses]);
-
-  // Clear batches that are no longer valid when the selected courses change
-  useEffect(() => {
-    const validBatchIds = new Set(batchOptions.map((o) => o.id));
-    setFormData((prev) => {
-      const newBatchIds = prev.batchIds.filter((id) => validBatchIds.has(id));
-      if (newBatchIds.length === prev.batchIds.length) return prev;
-      return { ...prev, batchIds: newBatchIds };
-    });
-  }, [batchOptions]);
-
-  // Clear modules that are no longer valid when the selected courses change
-  useEffect(() => {
-    const validModuleIds = new Set(availableModulesOptions.map((o) => o.id));
-    setFormData((prev) => {
-      const newModuleIds = prev.moduleIds.filter((id) => validModuleIds.has(id));
-      if (newModuleIds.length === prev.moduleIds.length) return prev;
-      return { ...prev, moduleIds: newModuleIds };
-    });
-  }, [availableModulesOptions]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -217,66 +171,18 @@ export default function CreateInstructorPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Assigned Courses <span className="text-red-500">*</span>
-            </label>
-            <MultiSelect
-              options={courseOptions}
-              selectedIds={formData.courseIds}
-              onChange={(ids) => setFormData({ ...formData, courseIds: ids })}
-              placeholder={courseOptions.length === 0 ? "No courses available" : "Select courses..."}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Select the courses this instructor will be responsible for. Available batches and modules depend on this selection.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Assigned Batches <span className="text-red-500">*</span>
-            </label>
-            <MultiSelect
-              options={batchOptions}
-              selectedIds={formData.batchIds}
-              onChange={(ids) => setFormData({ ...formData, batchIds: ids })}
-              placeholder={
-                formData.courseIds.length === 0
-                  ? "Select courses first"
-                  : batchOptions.length === 0
-                  ? "No batches available for selected courses"
-                  : "Select batches..."
-              }
-              disabled={formData.courseIds.length === 0}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Only batches belonging to the selected courses are shown. Instructor will only have access to learners within these batches.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Assigned Modules <span className="text-red-500">*</span>
-            </label>
-            <MultiSelect
-              options={availableModulesOptions}
-              selectedIds={formData.moduleIds}
-              onChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
-              placeholder={
-                formData.courseIds.length === 0
-                  ? "Select courses first"
-                  : modulesLoading
-                  ? "Loading modules..."
-                  : availableModulesOptions.length === 0
-                  ? "No modules available for selected courses"
-                  : "Select modules..."
-              }
-              disabled={formData.courseIds.length === 0 || modulesLoading}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Only modules belonging to the selected courses are shown. Instructor will only see these modules within their assigned batches.
-            </p>
-          </div>
+          <HierarchicalInstructorSelector
+            courses={allCourses}
+            batches={allBatches}
+            courseModulesMap={courseModulesMap}
+            selectedCourses={formData.courseIds}
+            selectedBatches={formData.batchIds}
+            selectedModules={formData.moduleIds}
+            onCoursesChange={(ids) => setFormData({ ...formData, courseIds: ids })}
+            onBatchesChange={(ids) => setFormData({ ...formData, batchIds: ids })}
+            onModulesChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
+            disabled={modulesLoading}
+          />
 
           <div className="pt-4 flex justify-end">
             <button
