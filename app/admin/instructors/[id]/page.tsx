@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
 import { MultiSelect, Option } from "@/app/components/MultiSelect";
+import { BatchModuleSelector } from "@/app/components/BatchModuleSelector";
 
 export default function EditInstructorPage() {
   const router = useRouter();
@@ -202,18 +203,24 @@ export default function EditInstructorPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
               Assigned Modules <span className="text-red-500">*</span>
             </label>
-            <MultiSelect
-              options={availableModulesOptions}
-              selectedIds={formData.moduleIds}
-              onChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
-              placeholder={formData.batchIds.length === 0 ? "Select batches first" : (availableModulesOptions.length === 0 ? "No modules available for selected batches" : "Select modules...")}
-              disabled={formData.batchIds.length === 0}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Select batches above to see available modules. Instructor will only see these modules within their assigned batches.
+            {formData.batchIds.length === 0 ? (
+              <div className="p-4 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
+                Select batches first to see available modules
+              </div>
+            ) : (
+              <BatchModuleSelector
+                batches={allBatches.filter((b) => formData.batchIds.includes(b.id))}
+                modules={availableModulesOptions.map((opt) => ({ id: opt.id, title: opt.label }))}
+                selectedIds={formData.moduleIds}
+                onChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
+                disabled={formData.batchIds.length === 0}
+              />
+            )}
+            <p className="text-xs text-slate-500 mt-3">
+              Browse modules by batch using the tabs above. Select only the modules this instructor will teach.
             </p>
           </div>
 
