@@ -164,6 +164,7 @@ export function HierarchicalInstructorSelector({
                               className="w-4 h-4 rounded cursor-pointer"
                             />
                             <button
+                              type="button"
                               onClick={() => toggleBatchExpanded(batch.id)}
                               disabled={disabled}
                               className="flex-1 flex items-center gap-2 p-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700/50 rounded transition-colors text-left"
@@ -192,6 +193,7 @@ export function HierarchicalInstructorSelector({
                                 const isModuleSelected = selectedModules.includes(module.moduleId);
                                 return (
                                   <button
+                                    type="button"
                                     key={module.moduleId}
                                     onClick={() => toggleModule(module.moduleId)}
                                     disabled={disabled}
