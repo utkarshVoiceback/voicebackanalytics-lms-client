@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
 interface OptionData {
@@ -36,12 +36,15 @@ interface ModuleData {
 
 export default function LearnerQuizPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { id } = use(params);
 
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [module, setModule] = useState<ModuleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [courseName, setCourseName] = useState<string>("My Course");
 
   // Submissions map: questionId -> selectedOptionId
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -50,6 +53,13 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
   const [showWarning, setShowWarning] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
   const [completing, setCompleting] = useState(false);
+
+  useEffect(() => {
+    const paramCourseId = searchParams.get("courseId");
+    const paramCourseName = searchParams.get("courseName");
+    setCourseId(paramCourseId);
+    setCourseName(paramCourseName || "My Course");
+  }, [searchParams]);
 
   useEffect(() => {
     if (id) fetchQuiz();
@@ -124,7 +134,12 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
     setCompleting(false);
 
     if (res.success) {
-      router.push(`/learner/modules/${id}`);
+      const modulePath = `/learner/modules/${id}`;
+      if (courseId) {
+        router.push(`${modulePath}?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`);
+      } else {
+        router.push(modulePath);
+      }
     } else {
       setError(res.message || "Failed to mark module as completed");
     }
@@ -149,7 +164,14 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
           </div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">{error}</p>
-          <button onClick={() => router.push(`/learner/modules/${id}`)} className="rounded-lg bg-slate-200 text-slate-900 dark:bg-slate-800 px-6 py-2.5 font-medium dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+          <button onClick={() => {
+            const modulePath = `/learner/modules/${id}`;
+            if (courseId) {
+              router.push(`${modulePath}?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`);
+            } else {
+              router.push(modulePath);
+            }
+          }} className="rounded-lg bg-slate-200 text-slate-900 dark:bg-slate-800 px-6 py-2.5 font-medium dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
             Back to Module
           </button>
         </div>
@@ -223,8 +245,15 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
                 Retry Assessment
               </button>
             )}
-            
-            <button onClick={() => router.push(`/learner/modules/${id}`)} className="w-full rounded-xl bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white px-6 py-4 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+
+            <button onClick={() => {
+              const modulePath = `/learner/modules/${id}`;
+              if (courseId) {
+                router.push(`${modulePath}?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`);
+              } else {
+                router.push(modulePath);
+              }
+            }} className="w-full rounded-xl bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white px-6 py-4 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
               Return to Module
             </button>
           </div>
@@ -239,7 +268,14 @@ export default function LearnerQuizPage({ params }: { params: Promise<{ id: stri
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4 min-w-0">
-            <button onClick={() => router.push(`/learner/modules/${id}`)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">
+            <button onClick={() => {
+              const modulePath = `/learner/modules/${id}`;
+              if (courseId) {
+                router.push(`${modulePath}?courseId=${courseId}&courseName=${encodeURIComponent(courseName)}`);
+              } else {
+                router.push(modulePath);
+              }
+            }} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>

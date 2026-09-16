@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
 import { MultiSelect, Option } from "@/app/components/MultiSelect";
-import { BatchModuleSelector } from "@/app/components/BatchModuleSelector";
 
 export default function EditInstructorPage() {
   const router = useRouter();
@@ -19,8 +18,9 @@ export default function EditInstructorPage() {
     mobile: "",
     email: "",
     batchIds: [] as string[],
-    moduleIds: [] as string[],
   });
+  const [batchModuleSelections, setBatchModuleSelections] = useState<Record<string, string[]>>({});
+  const [activeTab, setActiveTab] = useState<string>("");
 
   const [allBatches, setAllBatches] = useState<any[]>([]);
   const [allModules, setAllModules] = useState<any[]>([]);
@@ -39,13 +39,53 @@ export default function EditInstructorPage() {
 
         if (instructorRes.success) {
           const instructor = instructorRes.data;
+          const batchIds = instructor.instructorBatches?.map((ib: any) => ib.batchId) || [];
+
           setFormData({
             name: instructor.name,
             mobile: instructor.mobile,
             email: instructor.email,
-            batchIds: instructor.instructorBatches?.map((ib: any) => ib.batchId) || [],
-            moduleIds: instructor.instructorModules?.map((im: any) => im.moduleId) || [],
+            batchIds,
           });
+
+          // Initialize per-batch module selections
+          const selections: Record<string, string[]> = {};
+          for (const batchId of batchIds) {
+            selections[batchId] = [];
+          }
+
+          if (instructor.instructorModules && instructor.instructorModules.length > 0) {
+            // Get modules for each batch
+            const batchesData = batchesRes.data as any[];
+            const modulesByBatch: Record<string, string[]> = {};
+
+            for (const batch of batchesData) {
+              if (batchIds.includes(batch.id)) {
+                modulesByBatch[batch.id] = [];
+              }
+            }
+
+            // Map each selected module to its batches
+            for (const moduleId of instructor.instructorModules.map((im: any) => im.moduleId)) {
+              for (const batch of batchesData) {
+                if (batchIds.includes(batch.id)) {
+                  // A module can belong to multiple batches if they share the same course
+                  const batchModules = modulesRes.data?.filter((m: any) => m.courseId === batch.courseId).map((m: any) => m.id) || [];
+                  if (batchModules.includes(moduleId)) {
+                    if (!modulesByBatch[batch.id].includes(moduleId)) {
+                      modulesByBatch[batch.id].push(moduleId);
+                    }
+                  }
+                }
+              }
+            }
+
+            setBatchModuleSelections(modulesByBatch);
+          }
+
+          if (batchIds.length > 0) {
+            setActiveTab(batchIds[0]);
+          }
         } else {
           window.alert(instructorRes.message || "Failed to load instructor");
           router.push("/admin/instructors");
@@ -87,16 +127,26 @@ export default function EditInstructorPage() {
       }));
   }, [formData.batchIds, allBatches, allModules]);
 
-  // Whenever selected batches change, we must remove moduleIds that are no longer valid
+  // Whenever selected batches change, update per-batch module selections
   useEffect(() => {
-    if (formData.moduleIds.length > 0 && availableModulesOptions.length > 0 && !loading) {
+    if (!loading) {
+      const newSelections: Record<string, string[]> = {};
       const validModuleIds = new Set(availableModulesOptions.map(m => m.id));
-      const newModuleIds = formData.moduleIds.filter(moduleId => validModuleIds.has(moduleId));
-      if (newModuleIds.length !== formData.moduleIds.length) {
-        setFormData(prev => ({ ...prev, moduleIds: newModuleIds }));
+
+      for (const batchId of formData.batchIds) {
+        const current = batchModuleSelections[batchId] || [];
+        newSelections[batchId] = current.filter(moduleId => validModuleIds.has(moduleId));
+      }
+
+      // Remove selections for deselected batches
+      setBatchModuleSelections(newSelections);
+
+      // Update active tab if current tab is deselected
+      if (formData.batchIds.length > 0 && !formData.batchIds.includes(activeTab)) {
+        setActiveTab(formData.batchIds[0]);
       }
     }
-  }, [availableModulesOptions, loading]);
+  }, [formData.batchIds, availableModulesOptions, loading, activeTab]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -105,14 +155,24 @@ export default function EditInstructorPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.batchIds.length === 0) return window.alert("Please select at least one batch.");
-    if (formData.moduleIds.length === 0) return window.alert("Please select at least one module.");
-    
+
+    const allModuleIds = new Set<string>();
+    for (const batchId of formData.batchIds) {
+      const modules = batchModuleSelections[batchId] || [];
+      modules.forEach(m => allModuleIds.add(m));
+    }
+
+    if (allModuleIds.size === 0) return window.alert("Please select at least one module.");
+
     setSaving(true);
 
     try {
       const res = await apiFetch(`/instructors/${id}`, {
         method: "PUT",
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          moduleIds: Array.from(allModuleIds),
+        }),
       });
 
       if (res.success) {
@@ -211,16 +271,102 @@ export default function EditInstructorPage() {
                 Select batches first to see available modules
               </div>
             ) : (
-              <BatchModuleSelector
-                batches={allBatches.filter((b) => formData.batchIds.includes(b.id))}
-                modules={availableModulesOptions.map((opt) => ({ id: opt.id, title: opt.label }))}
-                selectedIds={formData.moduleIds}
-                onChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
-                disabled={formData.batchIds.length === 0}
-              />
+              <div className="space-y-4">
+                {/* Batch Tabs */}
+                <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700 overflow-x-auto pb-2">
+                  {allBatches.filter((b) => formData.batchIds.includes(b.id)).map((batch) => (
+                    <button
+                      key={batch.id}
+                      onClick={() => setActiveTab(batch.id)}
+                      className={`px-4 py-2 rounded-t-lg font-medium text-sm whitespace-nowrap transition-colors ${
+                        activeTab === batch.id
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600"
+                          : "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300"
+                      }`}
+                    >
+                      {batch.batchTitle}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Modules for Active Batch */}
+                {(() => {
+                  const activeBatch = allBatches.find(b => b.id === activeTab && formData.batchIds.includes(b.id));
+                  if (!activeBatch) return null;
+
+                  const batchModules = availableModulesOptions.filter(m => {
+                    return m.group === activeBatch.course?.title;
+                  });
+                  const selectedForBatch = batchModuleSelections[activeBatch.id] || [];
+
+                  return (
+                    <div className="space-y-2">
+                      {batchModules.length === 0 ? (
+                        <div className="p-4 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
+                          No modules available for this batch
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
+                          {batchModules.map((module) => {
+                            const isSelected = selectedForBatch.includes(module.id);
+                            return (
+                              <button
+                                key={module.id}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setBatchModuleSelections(prev => ({
+                                      ...prev,
+                                      [activeBatch.id]: prev[activeBatch.id].filter(id => id !== module.id),
+                                    }));
+                                  } else {
+                                    setBatchModuleSelections(prev => ({
+                                      ...prev,
+                                      [activeBatch.id]: [...(prev[activeBatch.id] || []), module.id],
+                                    }));
+                                  }
+                                }}
+                                className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                                  isSelected
+                                    ? "bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600/50"
+                                    : "bg-white dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600/50"
+                                } cursor-pointer`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  readOnly
+                                  className="w-5 h-5 rounded border-2 cursor-pointer"
+                                />
+                                <span className={`text-sm font-medium ${isSelected ? "text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300"}`}>
+                                  {module.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Selected Count */}
+                {(() => {
+                  const selectedCount = Object.values(batchModuleSelections).flat().length;
+                  return selectedCount > 0 ? (
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-600/30">
+                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                        {selectedCount} module{selectedCount !== 1 ? "s" : ""} selected
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
             )}
             <p className="text-xs text-slate-500 mt-3">
-              Browse modules by batch using the tabs above. Select only the modules this instructor will teach.
+              Use tabs to switch between batches. Select modules for each batch separately.
             </p>
           </div>
 
