@@ -30,26 +30,95 @@ interface AssessmentItem {
   latestAttempt: AttemptData | null;
 }
 
+interface EnrolledCourse {
+  id: string;
+  batchTitle: string;
+  courseId: string;
+  course: {
+    id: string;
+    title: string;
+  };
+}
+
 export default function AssessmentsPage() {
   const router = useRouter();
   const [assessments, setAssessments] = useState<AssessmentItem[]>([]);
+  const [allAssessments, setAllAssessments] = useState<AssessmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [courseName, setCourseName] = useState<string>("My Course");
+  const [courseModuleMap, setCourseModuleMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    fetchAssessments();
+    fetchInitialData();
   }, []);
 
-  const fetchAssessments = async () => {
+  const fetchInitialData = async () => {
     setLoading(true);
     setError(null);
-    const res = await apiFetch("/learner/assessments");
-    if (res.success && res.data) {
-      setAssessments(res.data);
-    } else {
-      setError(res.message || "Failed to load assessments.");
+    try {
+      // Fetch all enrolled courses
+      const coursesRes = await apiFetch("/learner/batches");
+      if (!coursesRes.success || !Array.isArray(coursesRes.data)) {
+        setError("Failed to load your courses.");
+        setLoading(false);
+        return;
+      }
+
+      setEnrolledCourses(coursesRes.data);
+
+      // Build course-module mapping by fetching modules for each course
+      const moduleMap: Record<string, string> = {};
+      for (const course of coursesRes.data) {
+        const modulesRes = await apiFetch(`/modules?courseId=${course.course.id}`);
+        if (modulesRes.success && Array.isArray(modulesRes.data)) {
+          modulesRes.data.forEach((mod: any) => {
+            moduleMap[mod.id] = course.course.id;
+          });
+        }
+      }
+      setCourseModuleMap(moduleMap);
+
+      // Fetch all assessments
+      const assessRes = await apiFetch("/learner/assessments");
+      if (assessRes.success && Array.isArray(assessRes.data)) {
+        setAllAssessments(assessRes.data);
+      }
+
+      if (coursesRes.data.length > 0) {
+        const defaultCourse = coursesRes.data[0];
+        setCourseId(defaultCourse.course.id);
+        setCourseName(defaultCourse.course.title);
+        filterAssessmentsByCourse(defaultCourse.course.id, assessRes.data || [], moduleMap);
+      } else {
+        setError("You are not enrolled in any courses.");
+        setLoading(false);
+      }
+    } catch (err) {
+      setError("Failed to load courses. Please try again.");
+      setLoading(false);
     }
+  };
+
+  const filterAssessmentsByCourse = (course: string, allAssess: AssessmentItem[], map?: Record<string, string>) => {
     setLoading(false);
+    setError(null);
+    const mapToUse = map || courseModuleMap;
+    // Filter assessments based on course-module mapping
+    const filtered = allAssess.filter(item => mapToUse[item.moduleId] === course);
+    setAssessments(filtered);
+  };
+
+
+  const handleCourseChange = (newCourseId: string) => {
+    const selectedCourse = enrolledCourses.find(c => c.course.id === newCourseId);
+    if (selectedCourse) {
+      setCourseId(newCourseId);
+      setCourseName(selectedCourse.course.title);
+      filterAssessmentsByCourse(newCourseId, allAssessments);
+    }
   };
 
   const getStatusConfig = (status: string) => {
@@ -178,7 +247,26 @@ export default function AssessmentsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Assessments</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Track your assessment progress across all training modules.</p>
+          {/* Course Selector Dropdown */}
+          {enrolledCourses.length > 0 && (
+            <div className="mt-3 w-fit">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                Select Course
+              </label>
+              <select
+                value={courseId || ""}
+                onChange={(e) => handleCourseChange(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
+              >
+                {enrolledCourses.map((course) => (
+                  <option key={course.id} value={course.course.id}>
+                    {course.course.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <p className="text-slate-500 dark:text-slate-400 mt-3">Track your assessment progress across all training modules.</p>
         </div>
 
         {/* Error */}
@@ -186,7 +274,7 @@ export default function AssessmentsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
             <p className="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
             <button
-              onClick={fetchAssessments}
+              onClick={fetchInitialData}
               className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               Try Again

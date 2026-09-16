@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 interface Module {
   moduleId: string;
@@ -44,6 +44,7 @@ export function HierarchicalInstructorSelector({
   disabled = false,
 }: HierarchicalInstructorSelectorProps) {
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
+  const [batchModuleSelections, setBatchModuleSelections] = useState<Record<string, string[]>>({});
 
   const toggleBatchExpanded = (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
@@ -68,18 +69,40 @@ export function HierarchicalInstructorSelector({
     if (disabled) return;
     if (selectedBatches.includes(batchId)) {
       onBatchesChange(selectedBatches.filter((id) => id !== batchId));
+      // Collapse the batch dropdown when deselecting
+      const newExpanded = new Set(expandedBatches);
+      newExpanded.delete(batchId);
+      setExpandedBatches(newExpanded);
     } else {
       onBatchesChange([...selectedBatches, batchId]);
+      // Auto-expand the batch dropdown when selecting
+      const newExpanded = new Set(expandedBatches);
+      newExpanded.add(batchId);
+      setExpandedBatches(newExpanded);
     }
   };
 
-  const toggleModule = (moduleId: string) => {
+  const toggleModule = (moduleId: string, batchId: string) => {
     if (disabled) return;
-    if (selectedModules.includes(moduleId)) {
-      onModulesChange(selectedModules.filter((id) => id !== moduleId));
+    const currentSelections = batchModuleSelections[batchId] || [];
+    let newSelections: string[];
+
+    if (currentSelections.includes(moduleId)) {
+      newSelections = currentSelections.filter((id) => id !== moduleId);
     } else {
-      onModulesChange([...selectedModules, moduleId]);
+      newSelections = [...currentSelections, moduleId];
     }
+
+    setBatchModuleSelections(prev => ({
+      ...prev,
+      [batchId]: newSelections,
+    }));
+
+    // Update parent with union of all batch selections
+    const allModules = new Set<string>();
+    Object.values(batchModuleSelections).forEach(modules => modules.forEach(m => allModules.add(m)));
+    newSelections.forEach(m => allModules.add(m));
+    onModulesChange(Array.from(allModules));
   };
 
   // Get batches for selected courses
@@ -88,22 +111,28 @@ export function HierarchicalInstructorSelector({
     return batches.filter((b) => selectedCourseSet.has(b.courseId));
   }, [batches, selectedCourses]);
 
-  // Get modules for selected batches
-  const modulesForBatches = useMemo(() => {
+  // Get modules for each batch (creates a mapping of batchId -> modules)
+  const modulesByBatch = useMemo(() => {
+    const result: Record<string, Module[]> = {};
     const selectedBatchSet = new Set(selectedBatches);
-    const selectedCourseSet = new Set(selectedCourses);
 
-    const moduleMap = new Map<string, Module & { batchId: string }>();
     batchesForCourses.forEach((batch) => {
       if (selectedBatchSet.has(batch.id)) {
         const mods = courseModulesMap[batch.courseId] || [];
-        mods.forEach((mod) => {
-          moduleMap.set(mod.moduleId, { ...mod, batchId: batch.id });
-        });
+        result[batch.id] = mods;
       }
     });
-    return Array.from(moduleMap.values());
-  }, [batchesForCourses, selectedBatches, courseModulesMap, selectedCourses]);
+    return result;
+  }, [batchesForCourses, selectedBatches, courseModulesMap]);
+
+  // Sync batch module selections when selected batches change (remove deselected batches)
+  useEffect(() => {
+    const newSelections: Record<string, string[]> = {};
+    for (const batchId of selectedBatches) {
+      newSelections[batchId] = batchModuleSelections[batchId] || [];
+    }
+    setBatchModuleSelections(newSelections);
+  }, [selectedBatches]);
 
   return (
     <div className="space-y-4">
@@ -148,9 +177,7 @@ export function HierarchicalInstructorSelector({
                     {courseBatches.map((batch) => {
                       const isBatchSelected = selectedBatches.includes(batch.id);
                       const isBatchExpanded = expandedBatches.has(batch.id);
-                      const batchModules = courseModulesMap[batch.courseId]?.filter((m) =>
-                        modulesForBatches.some((mb) => mb.moduleId === m.moduleId && mb.batchId === batch.id)
-                      ) || [];
+                      const batchModules = isBatchSelected ? (modulesByBatch[batch.id] || []) : [];
 
                       return (
                         <div key={batch.id} className="space-y-2">
@@ -190,12 +217,13 @@ export function HierarchicalInstructorSelector({
                           {isBatchSelected && isBatchExpanded && batchModules.length > 0 && (
                             <div className="ml-6 space-y-1 p-2 bg-white dark:bg-slate-700/30 rounded border border-slate-200 dark:border-slate-700/50">
                               {batchModules.map((module) => {
-                                const isModuleSelected = selectedModules.includes(module.moduleId);
+                                const selectedInBatch = batchModuleSelections[batch.id] || [];
+                                const isModuleSelected = selectedInBatch.includes(module.moduleId);
                                 return (
                                   <button
                                     type="button"
                                     key={module.moduleId}
-                                    onClick={() => toggleModule(module.moduleId)}
+                                    onClick={() => toggleModule(module.moduleId, batch.id)}
                                     disabled={disabled}
                                     className={`w-full flex items-center gap-2 p-2 text-sm rounded transition-colors text-left ${
                                       isModuleSelected

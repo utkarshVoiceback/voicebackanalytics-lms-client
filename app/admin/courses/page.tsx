@@ -1,14 +1,22 @@
 ﻿"use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setCourses, setCourseLoading } from "@/store/courseSlice";
 
 export default function AdminCoursesPage() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { courses, loading } = useAppSelector((state) => state.course);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; courseId: string | null; courseName: string | null }>({
+    show: false,
+    courseId: null,
+    courseName: null,
+  });
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchCourses();
@@ -27,6 +35,29 @@ export default function AdminCoursesPage() {
     return status === "ACTIVE"
       ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30"
       : "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/30";
+  };
+
+  const handleDeleteClick = (courseId: string, courseName: string) => {
+    setDeleteConfirm({ show: true, courseId, courseName });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm.courseId) return;
+
+    setDeleting(true);
+    const res = await apiFetch(`/courses/${deleteConfirm.courseId}`, { method: "DELETE" });
+
+    if (res.success) {
+      setDeleteConfirm({ show: false, courseId: null, courseName: null });
+      fetchCourses();
+    } else {
+      alert("Failed to delete course: " + (res.message || "Unknown error"));
+    }
+    setDeleting(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirm({ show: false, courseId: null, courseName: null });
   };
 
   return (
@@ -78,6 +109,26 @@ export default function AdminCoursesPage() {
                 >
                   Manage Modules
                 </Link>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push(`/admin/courses/edit?courseId=${course.id}`)}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-200 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(course.id, course.title)}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-200 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -93,6 +144,48 @@ export default function AdminCoursesPage() {
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-red-50 dark:bg-red-500/10">
+              <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white text-center mb-2">Delete Course?</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-center mb-6">
+              Are you sure you want to delete <strong>{deleteConfirm.courseName}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700/50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
