@@ -8,11 +8,9 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const [askForEach, setAskForEach] = useState(false);
-  const [daysAfterCompletion, setDaysAfterCompletion] = useState(0);
-  const [contentModules, setContentModules] = useState(false);
-  const [contentAssignments, setContentAssignments] = useState(false);
-  const [contentComm, setContentComm] = useState(false);
+  const [archiveAfterDays, setArchiveAfterDays] = useState(30);
+  const [archiveModulesAssignments, setArchiveModulesAssignments] = useState(false);
+  const [archiveCommunicationRecords, setArchiveCommunicationRecords] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -26,11 +24,9 @@ export default function AdminSettingsPage() {
       if (archivePref && archivePref.value) {
         try {
           const parsed = JSON.parse(archivePref.value);
-          setAskForEach(!!parsed.askForEach);
-          setDaysAfterCompletion(parsed.daysAfterCompletion || 0);
-          setContentModules(!!parsed.content?.modules);
-          setContentAssignments(!!parsed.content?.assignments);
-          setContentComm(!!parsed.content?.communicationRecords);
+          setArchiveAfterDays(parsed.archiveAfterDays || 30);
+          setArchiveModulesAssignments(!!parsed.archiveModulesAssignments);
+          setArchiveCommunicationRecords(!!parsed.archiveCommunicationRecords);
         } catch (e) {
           console.error("Failed to parse preferences");
         }
@@ -44,17 +40,19 @@ export default function AdminSettingsPage() {
     setSaving(true);
     setMessage(null);
 
+    if (!archiveModulesAssignments && !archiveCommunicationRecords) {
+      setMessage({ type: "error", text: "Please select at least one content type to archive." });
+      setSaving(false);
+      return;
+    }
+
     const payload = [
       {
         key: "ARCHIVE_PREFERENCES",
         value: JSON.stringify({
-          askForEach,
-          daysAfterCompletion: Math.max(0, Math.floor(daysAfterCompletion)),
-          content: {
-            modules: contentModules,
-            assignments: contentAssignments,
-            communicationRecords: contentComm
-          }
+          archiveAfterDays: Number(archiveAfterDays),
+          archiveModulesAssignments,
+          archiveCommunicationRecords
         })
       }
     ];
@@ -96,33 +94,25 @@ export default function AdminSettingsPage() {
 
           <div className="p-6 space-y-8">
             <div>
-              <label className="flex items-center justify-between cursor-pointer">
-                <div>
-                  <div className="font-medium text-slate-900 dark:text-white">ASK FOR EACH</div>
-                  <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">If Yes, an Admin must manually approve archiving for each batch when it becomes eligible.</div>
-                </div>
-                <div className="relative inline-block w-12 h-6 rounded-full transition-colors ease-in-out duration-200 focus:outline-none" style={{ backgroundColor: askForEach ? '#3b82f6' : '#cbd5e1' }}>
-                  <input type="checkbox" className="sr-only" checked={askForEach} onChange={(e) => setAskForEach(e.target.checked)} />
-                  <span className={`inline-block w-4 h-4 mt-1 ml-1 transform bg-white rounded-full transition ease-in-out duration-200 ${askForEach ? 'translate-x-6' : 'translate-x-0'}`} />
-                </div>
-              </label>
-            </div>
-
-            <div>
               <label htmlFor="days" className="block font-medium text-slate-900 dark:text-white mb-2">
-                Archive after batch completion (Days)
+                Archive after batch ends
               </label>
-              <input
+              <select
                 id="days"
-                type="number"
-                min="0"
-                step="1"
                 required
-                value={daysAfterCompletion}
-                onChange={(e) => setDaysAfterCompletion(Number(e.target.value))}
-                className="w-full sm:w-48 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Number of days after a batch's end date before it becomes eligible for archiving.</p>
+                value={archiveAfterDays}
+                onChange={(e) => setArchiveAfterDays(Number(e.target.value))}
+                className="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value={7}>7 Days</option>
+                <option value={15}>15 Days</option>
+                <option value={30}>30 Days</option>
+                <option value={60}>60 Days</option>
+                <option value={90}>90 Days</option>
+                <option value={180}>180 Days</option>
+                <option value={365}>365 Days</option>
+              </select>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Select how many days after the batch end date the selected content should be archived.</p>
             </div>
 
             <div>
@@ -131,29 +121,20 @@ export default function AdminSettingsPage() {
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={contentModules}
-                    onChange={(e) => setContentModules(e.target.checked)}
+                    checked={archiveModulesAssignments}
+                    onChange={(e) => setArchiveModulesAssignments(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                   />
-                  <span className="text-slate-700 dark:text-slate-300">Modules (Learner Progress)</span>
+                  <span className="text-slate-700 dark:text-slate-300">Modules and Assignments</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={contentAssignments}
-                    onChange={(e) => setContentAssignments(e.target.checked)}
+                    checked={archiveCommunicationRecords}
+                    onChange={(e) => setArchiveCommunicationRecords(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                   />
-                  <span className="text-slate-700 dark:text-slate-300">Assignments (MCQ Attempts)</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={contentComm}
-                    onChange={(e) => setContentComm(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                  />
-                  <span className="text-slate-700 dark:text-slate-300">Communication Records (Conversations)</span>
+                  <span className="text-slate-700 dark:text-slate-300">Communication Records</span>
                 </label>
               </div>
             </div>
