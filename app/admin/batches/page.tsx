@@ -54,6 +54,17 @@ export default function BatchListPage() {
     setLastSelectedBatchId(batchId);
   };
 
+  const handleApproveArchive = async (batchId: string) => {
+    if (!confirm("Are you sure you want to approve archiving for this batch?")) return;
+    const res = await apiFetch(/batches/\/approve-archive, { method: "POST" });
+    if (res.success) {
+      alert("Batch archived successfully.");
+      fetchBatches();
+    } else {
+      alert(res.message || "Failed to archive batch");
+    }
+  };
+
   const fetchEnrollmentForms = async () => {
     const res = await apiFetch("/enrollment-forms");
     if (res.success && res.data) {
