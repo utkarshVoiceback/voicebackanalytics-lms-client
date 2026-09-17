@@ -10,7 +10,7 @@ interface Instructor {
   mobile: string;
   email: string;
   instructorModules: { module: { title: string } }[];
-  instructorBatches: { batch: { batchTitle: string } }[];
+  instructorBatches: { batch: { batchTitle: string; courseId: string; course?: { id: string; title: string } } }[];
 }
 
 export default function InstructorsPage() {
@@ -101,21 +101,20 @@ export default function InstructorsPage() {
               <tr>
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Email / Mobile</th>
-                <th className="px-6 py-4">Batches</th>
-                <th className="px-6 py-4">Modules</th>
+                <th className="px-6 py-4">Course • Batch • Module</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
                     Loading instructors...
                   </td>
                 </tr>
               ) : filteredInstructors.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
                     No instructors found.
                   </td>
                 </tr>
@@ -137,27 +136,57 @@ export default function InstructorsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[200px] overflow-hidden">
-                        {instructor.instructorBatches?.map((ib, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                          >
-                            {ib.batch.batchTitle}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[200px] overflow-hidden">
-                        {instructor.instructorModules?.map((im, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                          >
-                            {im.module.title}
-                          </span>
-                        ))}
+                      <div className="space-y-3">
+                        {(() => {
+                          const courseMap = new Map<string, { courseTitle: string; batches: any[] }>();
+
+                          instructor.instructorBatches?.forEach((ib) => {
+                            const courseId = ib.batch.courseId;
+                            const courseTitle = ib.batch.course?.title || "Unknown";
+
+                            if (!courseMap.has(courseId)) {
+                              courseMap.set(courseId, { courseTitle, batches: [] });
+                            }
+                            courseMap.get(courseId)!.batches.push(ib);
+                          });
+
+                          return Array.from(courseMap.entries()).map(([courseId, { courseTitle, batches }]) => (
+                            <div key={courseId} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                              <div className="bg-slate-100 dark:bg-slate-800 px-3 py-2">
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white">📚 {courseTitle}</p>
+                              </div>
+
+                              <div className="space-y-2 p-3">
+                                {batches.map((ib, batchIdx) => (
+                                  <div key={batchIdx}>
+                                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">├─ {ib.batch.batchTitle}</p>
+
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                      {(() => {
+                                        const batchModules = instructor.instructorModules?.filter((im) => {
+                                          return instructor.instructorBatches?.some(
+                                            (b) => b.batch.courseId === ib.batch.courseId
+                                          );
+                                        }) || [];
+
+                                        return batchModules.length > 0 ? (
+                                          batchModules.map((im, modIdx) => (
+                                            <span
+                                              key={modIdx}
+                                              className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium"
+                                            >
+                                              {im.module.title}
+                                            </span>
+                                          ))
+                                        ) : null;
+                                      })()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ));
+                        })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right space-x-3">
