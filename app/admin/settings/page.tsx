@@ -20,10 +20,10 @@ export default function AdminSettingsPage() {
     setLoading(true);
     const res = await apiFetch("/app-config");
     if (res.success && res.data) {
-      const archivePref = res.data.find((c: any) => c.key === "ARCHIVE_PREFERENCES");
-      if (archivePref && archivePref.value) {
+      const archivePrefValue = res.data.ARCHIVE_PREFERENCES;
+      if (archivePrefValue) {
         try {
-          const parsed = JSON.parse(archivePref.value);
+          const parsed = JSON.parse(archivePrefValue);
           setArchiveAfterDays(parsed.archiveAfterDays || 30);
           setArchiveModulesAssignments(!!parsed.archiveModulesAssignments);
           setArchiveCommunicationRecords(!!parsed.archiveCommunicationRecords);
@@ -46,20 +46,17 @@ export default function AdminSettingsPage() {
       return;
     }
 
-    const payload = [
-      {
-        key: "ARCHIVE_PREFERENCES",
-        value: JSON.stringify({
-          archiveAfterDays: Number(archiveAfterDays),
-          archiveModulesAssignments,
-          archiveCommunicationRecords
-        })
-      }
-    ];
+    const payload = {
+      ARCHIVE_PREFERENCES: JSON.stringify({
+        archiveAfterDays: Number(archiveAfterDays),
+        archiveModulesAssignments,
+        archiveCommunicationRecords
+      })
+    };
 
     const res = await apiFetch("/app-config", {
       method: "PUT",
-      body: JSON.stringify({ configs: payload })
+      body: JSON.stringify(payload)
     });
 
     if (res.success) {
