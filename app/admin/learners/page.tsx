@@ -368,7 +368,7 @@ export default function AdminLearnersPage() {
                               Download Resume
                             </button>
                           )}
-                          {l.resumeStatus === "EDITED" && user?.role === "ADMIN" && (
+                          {(l.resumeStatus === "EDITED" || l.resumeStatus === "UPLOADED") && user?.role === "ADMIN" && (
                             <button
                               onClick={() => handleApproveResume(l.id)}
                               disabled={approvingId === l.id}
