@@ -156,9 +156,40 @@ export default function AdminLearnersPage() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to approve resume");
-      console.error("Approve error:", err);
     } finally {
       setApprovingId(null);
+    }
+  };
+
+  const [discussingId, setDiscussingId] = useState<string | null>(null);
+
+  const handleDiscussResume = async (learnerId: string, learnerUserId: string) => {
+    try {
+      setDiscussingId(learnerId);
+      setError(null);
+      
+      const res = await apiFetch(`/notifications`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Resume Discussion",
+          message: "Your instructor would like to discuss your resume with you. Please review your resume and connect with your instructor.",
+          targetType: "LEARNER",
+          learnerIds: [learnerUserId]
+        })
+      });
+      
+      if (res.success) {
+        setSuccessMsg("Resume discussion notification sent to the learner.");
+        setTimeout(() => setSuccessMsg(null), 5000);
+      } else {
+        setError(res.message || "Failed to send discussion notification.");
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to send discussion notification.");
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setDiscussingId(null);
     }
   };
 
@@ -369,16 +400,29 @@ export default function AdminLearnersPage() {
                             </button>
                           )}
                           {(l.resumeStatus === "EDITED" || l.resumeStatus === "UPLOADED") && user?.role === "ADMIN" && (
-                            <button
-                              onClick={() => handleApproveResume(l.id)}
-                              disabled={approvingId === l.id}
-                              className="text-xs text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center gap-1 px-2 py-1 rounded transition-colors"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                              </svg>
-                              {approvingId === l.id ? "Approving..." : "Approve"}
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleApproveResume(l.id)}
+                                disabled={approvingId === l.id || discussingId === l.id}
+                                className="text-xs w-full text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex justify-center items-center gap-1 px-2 py-1 rounded transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                {approvingId === l.id ? "Approving..." : "Approve"}
+                              </button>
+                              
+                              <button
+                                onClick={() => handleDiscussResume(l.id, l.userId)}
+                                disabled={approvingId === l.id || discussingId === l.id}
+                                className="text-xs w-full text-white bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex justify-center items-center gap-1 px-2 py-1 rounded transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
+                                </svg>
+                                {discussingId === l.id ? "Sending..." : "Discuss"}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
