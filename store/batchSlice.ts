@@ -14,6 +14,7 @@ export interface Batch {
   status: string;
   createdAt: string;
   updatedAt: string;
+  archiveProcessed?: boolean;
 }
 
 interface BatchState {
