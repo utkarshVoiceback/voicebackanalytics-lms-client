@@ -10,7 +10,7 @@ export default function CreateBatchPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const [courses, setCourses] = useState<{ id: string; title: string }[]>([]);
+  const [courses, setCourses] = useState<{ id: string; title: string; courseCode: string }[]>([]);
   const [courseId, setCourseId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -35,10 +35,12 @@ export default function CreateBatchPage() {
   }, []);
 
   // Live preview of auto-generated Batch ID
+  // Uses courseCode (stable identifier) instead of course title,
+  // so the preview matches the actual ID that will be stored in the DB.
   const selectedCourse = courses.find((c) => c.id === courseId);
   const batchIdPreview =
     selectedCourse && startDate
-      ? `${selectedCourse.title}-B???-${startDate.replace(/-/g, "")}`
+      ? `${selectedCourse.courseCode}-B???-${startDate.replace(/-/g, "")}`
       : null;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -92,7 +94,7 @@ export default function CreateBatchPage() {
           Create New Batch
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          The Batch ID is auto-generated from the Course Name, Batch Number, and Start Date.
+          The Batch ID is auto-generated from the Course Code, Batch Number, and Start Date.
         </p>
       </div>
 
@@ -104,12 +106,12 @@ export default function CreateBatchPage() {
         <div className="text-sm text-blue-800 dark:text-blue-300">
           <p className="font-semibold mb-0.5">Auto-generated Batch ID</p>
           <p className="text-blue-700 dark:text-blue-400">
-            Format: <code className="font-mono bg-blue-100 dark:bg-blue-900/40 px-1 py-0.5 rounded text-xs">CourseName-B001-YYYYMMDD</code>
+            Format: <code className="font-mono bg-blue-100 dark:bg-blue-900/40 px-1 py-0.5 rounded text-xs">CourseCode-B001-YYYYMMDD</code>
             {batchIdPreview && (
               <span> &nbsp;→ Preview: <code className="font-mono bg-blue-100 dark:bg-blue-900/40 px-1 py-0.5 rounded text-xs">{batchIdPreview}</code></span>
             )}
           </p>
-          <p className="mt-1 text-blue-600 dark:text-blue-500 text-xs">The batch number increments automatically for each new batch in the same course.</p>
+          <p className="mt-1 text-blue-600 dark:text-blue-500 text-xs">The batch number increments automatically for each new batch in the same course. Course Code never changes, so Batch IDs stay stable even if the course name is updated.</p>
         </div>
       </div>
 

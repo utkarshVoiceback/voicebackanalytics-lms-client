@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
-import { HierarchicalInstructorSelector } from "@/app/components/HierarchicalInstructorSelector";
+import { HierarchicalInstructorSelector, BatchModuleSelection } from "@/app/components/HierarchicalInstructorSelector";
 
 export default function EditInstructorPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function EditInstructorPage() {
     email: "",
     courseIds: [] as string[],
     batchIds: [] as string[],
-    moduleIds: [] as string[],
+    batchModules: [] as BatchModuleSelection[],
   });
 
   const [allCourses, setAllCourses] = useState<any[]>([]);
@@ -48,7 +48,11 @@ export default function EditInstructorPage() {
         if (instructorRes.success && instructorRes.data) {
           const instructor = instructorRes.data;
           const batchIds = instructor.instructorBatches?.map((ib: any) => ib.batchId) || [];
-          const moduleIds = instructor.instructorModules?.map((im: any) => im.moduleId) || [];
+          // Build {batchId, moduleId} pairs — the exact assignment context from the DB
+          const batchModules: BatchModuleSelection[] = instructor.instructorModules?.map((im: any) => ({
+            batchId: im.batchId,
+            moduleId: im.moduleId,
+          })).filter((bm: BatchModuleSelection) => bm.batchId && bm.moduleId) || [];
           
           // Deduce courseIds from the selected batches
           const courseIdsSet = new Set<string>();
@@ -65,7 +69,7 @@ export default function EditInstructorPage() {
             email: instructor.email || "",
             courseIds: Array.from(courseIdsSet),
             batchIds,
-            moduleIds,
+            batchModules,
           });
         } else {
           window.alert(instructorRes.message || "Failed to load instructor");
@@ -123,7 +127,7 @@ export default function EditInstructorPage() {
     e.preventDefault();
     if (formData.courseIds.length === 0) return window.alert("Please select at least one course.");
     if (formData.batchIds.length === 0) return window.alert("Please select at least one batch.");
-    if (formData.moduleIds.length === 0) return window.alert("Please select at least one module.");
+    if (formData.batchModules.length === 0) return window.alert("Please select at least one module.");
 
     setLoading(true);
 
@@ -211,10 +215,10 @@ export default function EditInstructorPage() {
             courseModulesMap={courseModulesMap}
             selectedCourses={formData.courseIds}
             selectedBatches={formData.batchIds}
-            selectedModules={formData.moduleIds}
-            onCoursesChange={(ids) => setFormData({ ...formData, courseIds: ids })}
-            onBatchesChange={(ids) => setFormData({ ...formData, batchIds: ids })}
-            onModulesChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
+            selectedModules={formData.batchModules}
+            onCoursesChange={(ids) => setFormData((prev) => ({ ...prev, courseIds: ids }))}
+            onBatchesChange={(ids) => setFormData((prev) => ({ ...prev, batchIds: ids }))}
+            onModulesChange={(selections) => setFormData((prev) => ({ ...prev, batchModules: selections }))}
             disabled={modulesLoading}
           />
 

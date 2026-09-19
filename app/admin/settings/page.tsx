@@ -9,8 +9,6 @@ export default function AdminSettingsPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [archiveAfterDays, setArchiveAfterDays] = useState(30);
-  const [archiveModulesAssignments, setArchiveModulesAssignments] = useState(false);
-  const [archiveCommunicationRecords, setArchiveCommunicationRecords] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -25,8 +23,6 @@ export default function AdminSettingsPage() {
         try {
           const parsed = JSON.parse(archivePrefValue);
           setArchiveAfterDays(parsed.archiveAfterDays || 30);
-          setArchiveModulesAssignments(!!parsed.archiveModulesAssignments);
-          setArchiveCommunicationRecords(!!parsed.archiveCommunicationRecords);
         } catch (e) {
           console.error("Failed to parse preferences");
         }
@@ -40,17 +36,9 @@ export default function AdminSettingsPage() {
     setSaving(true);
     setMessage(null);
 
-    if (!archiveModulesAssignments && !archiveCommunicationRecords) {
-      setMessage({ type: "error", text: "Please select at least one content type to archive." });
-      setSaving(false);
-      return;
-    }
-
     const payload = {
       ARCHIVE_PREFERENCES: JSON.stringify({
-        archiveAfterDays: Number(archiveAfterDays),
-        archiveModulesAssignments,
-        archiveCommunicationRecords
+        archiveAfterDays: Number(archiveAfterDays)
       })
     };
 
@@ -110,30 +98,6 @@ export default function AdminSettingsPage() {
                 <option value={365}>365 Days</option>
               </select>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Select how many days after the batch end date the selected content should be archived.</p>
-            </div>
-
-            <div>
-              <div className="font-medium text-slate-900 dark:text-white mb-3">Archive these Content</div>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={archiveModulesAssignments}
-                    onChange={(e) => setArchiveModulesAssignments(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                  />
-                  <span className="text-slate-700 dark:text-slate-300">Modules and Assignments</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={archiveCommunicationRecords}
-                    onChange={(e) => setArchiveCommunicationRecords(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                  />
-                  <span className="text-slate-700 dark:text-slate-300">Communication Records</span>
-                </label>
-              </div>
             </div>
           </div>
 
