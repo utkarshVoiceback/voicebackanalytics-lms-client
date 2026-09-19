@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 
 interface Module {
   moduleId: string;
@@ -44,7 +44,6 @@ export function HierarchicalInstructorSelector({
   disabled = false,
 }: HierarchicalInstructorSelectorProps) {
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
-  const [batchModuleSelections, setBatchModuleSelections] = useState<Record<string, string[]>>({});
 
   const toggleBatchExpanded = (batchId: string) => {
     const newExpanded = new Set(expandedBatches);
@@ -58,23 +57,60 @@ export function HierarchicalInstructorSelector({
 
   const toggleCourse = (courseId: string) => {
     if (disabled) return;
+
     if (selectedCourses.includes(courseId)) {
+      // Removing course
       onCoursesChange(selectedCourses.filter((id) => id !== courseId));
+      
+      // Remove associated batches
+      const courseBatches = batches.filter(b => b.courseId === courseId).map(b => b.id);
+      const newBatches = selectedBatches.filter(bId => !courseBatches.includes(bId));
+      onBatchesChange(newBatches);
+
+      // Remove associated modules (only if they belong to this course)
+      const courseModuleIds = (courseModulesMap[courseId] || []).map(m => m.moduleId);
+      const newModules = selectedModules.filter(mId => !courseModuleIds.includes(mId));
+      onModulesChange(newModules);
+      
     } else {
+      // Adding course
       onCoursesChange([...selectedCourses, courseId]);
     }
   };
 
   const toggleBatch = (batchId: string) => {
     if (disabled) return;
+    
     if (selectedBatches.includes(batchId)) {
-      onBatchesChange(selectedBatches.filter((id) => id !== batchId));
+      // Removing batch
+      const newBatches = selectedBatches.filter((id) => id !== batchId);
+      onBatchesChange(newBatches);
+
       // Collapse the batch dropdown when deselecting
       const newExpanded = new Set(expandedBatches);
       newExpanded.delete(batchId);
       setExpandedBatches(newExpanded);
+
+      // We should unselect modules belonging to this batch's course, 
+      // UNLESS another batch from the SAME course is still selected.
+      const batchObj = batches.find(b => b.id === batchId);
+      if (batchObj) {
+        const otherSelectedBatchesSameCourse = newBatches.filter(bId => {
+          const b = batches.find(bb => bb.id === bId);
+          return b && b.courseId === batchObj.courseId;
+        });
+
+        if (otherSelectedBatchesSameCourse.length === 0) {
+          // No other batches from this course are selected, so remove its modules
+          const courseModuleIds = (courseModulesMap[batchObj.courseId] || []).map(m => m.moduleId);
+          const newModules = selectedModules.filter(mId => !courseModuleIds.includes(mId));
+          onModulesChange(newModules);
+        }
+      }
     } else {
+      // Adding batch
       onBatchesChange([...selectedBatches, batchId]);
+      
       // Auto-expand the batch dropdown when selecting
       const newExpanded = new Set(expandedBatches);
       newExpanded.add(batchId);
@@ -82,27 +118,14 @@ export function HierarchicalInstructorSelector({
     }
   };
 
-  const toggleModule = (moduleId: string, batchId: string) => {
+  const toggleModule = (moduleId: string) => {
     if (disabled) return;
-    const currentSelections = batchModuleSelections[batchId] || [];
-    let newSelections: string[];
 
-    if (currentSelections.includes(moduleId)) {
-      newSelections = currentSelections.filter((id) => id !== moduleId);
+    if (selectedModules.includes(moduleId)) {
+      onModulesChange(selectedModules.filter((id) => id !== moduleId));
     } else {
-      newSelections = [...currentSelections, moduleId];
+      onModulesChange([...selectedModules, moduleId]);
     }
-
-    setBatchModuleSelections(prev => ({
-      ...prev,
-      [batchId]: newSelections,
-    }));
-
-    // Update parent with union of all batch selections
-    const allModules = new Set<string>();
-    Object.values(batchModuleSelections).forEach(modules => modules.forEach(m => allModules.add(m)));
-    newSelections.forEach(m => allModules.add(m));
-    onModulesChange(Array.from(allModules));
   };
 
   // Get batches for selected courses
@@ -124,15 +147,6 @@ export function HierarchicalInstructorSelector({
     });
     return result;
   }, [batchesForCourses, selectedBatches, courseModulesMap]);
-
-  // Sync batch module selections when selected batches change (remove deselected batches)
-  useEffect(() => {
-    const newSelections: Record<string, string[]> = {};
-    for (const batchId of selectedBatches) {
-      newSelections[batchId] = batchModuleSelections[batchId] || [];
-    }
-    setBatchModuleSelections(newSelections);
-  }, [selectedBatches]);
 
   return (
     <div className="space-y-4">
@@ -157,7 +171,7 @@ export function HierarchicalInstructorSelector({
                     disabled={disabled}
                     className="w-5 h-5 rounded cursor-pointer"
                   />
-                  <span className={`flex-1 font-medium text-sm ${isCoursSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
+                  <span className={lex-1 font-medium text-sm }>
                     {course.title}
                   </span>
                   {isCoursSelected && (
@@ -197,7 +211,7 @@ export function HierarchicalInstructorSelector({
                               className="flex-1 flex items-center gap-2 p-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700/50 rounded transition-colors text-left"
                             >
                               <svg
-                                className={`w-4 h-4 transition-transform ${isBatchExpanded ? "rotate-90" : ""}`}
+                                className={w-4 h-4 transition-transform }
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -217,19 +231,14 @@ export function HierarchicalInstructorSelector({
                           {isBatchSelected && isBatchExpanded && batchModules.length > 0 && (
                             <div className="ml-6 space-y-1 p-2 bg-white dark:bg-slate-700/30 rounded border border-slate-200 dark:border-slate-700/50">
                               {batchModules.map((module) => {
-                                const selectedInBatch = batchModuleSelections[batch.id] || [];
-                                const isModuleSelected = selectedInBatch.includes(module.moduleId);
+                                const isModuleSelected = selectedModules.includes(module.moduleId);
                                 return (
                                   <button
                                     type="button"
                                     key={module.moduleId}
-                                    onClick={() => toggleModule(module.moduleId, batch.id)}
+                                    onClick={() => toggleModule(module.moduleId)}
                                     disabled={disabled}
-                                    className={`w-full flex items-center gap-2 p-2 text-sm rounded transition-colors text-left ${
-                                      isModuleSelected
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                                    }`}
+                                    className={w-full flex items-center gap-2 p-2 text-sm rounded transition-colors text-left }
                                   >
                                     <input
                                       type="checkbox"
