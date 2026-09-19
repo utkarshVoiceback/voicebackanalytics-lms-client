@@ -1,6 +1,6 @@
-﻿@use client";
+"use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 interface Module {
   moduleId: string;
@@ -57,60 +57,42 @@ export function HierarchicalInstructorSelector({
 
   const toggleCourse = (courseId: string) => {
     if (disabled) return;
-
     if (selectedCourses.includes(courseId)) {
-      // Removing course
       onCoursesChange(selectedCourses.filter((id) => id !== courseId));
       
-      // Remove associated batches
       const courseBatches = batches.filter(b => b.courseId === courseId).map(b => b.id);
-      const newBatches = selectedBatches.filter(bId => !courseBatches.includes(bId));
-      onBatchesChange(newBatches);
+      onBatchesChange(selectedBatches.filter(bId => !courseBatches.includes(bId)));
 
-      // Remove associated modules (only if they belong to this course)
       const courseModuleIds = (courseModulesMap[courseId] || []).map(m => m.moduleId);
-      const newModules = selectedModules.filter(mId => !courseModuleIds.includes(mId));
-      onModulesChange(newModules);
-      
+      onModulesChange(selectedModules.filter(mId => !courseModuleIds.includes(mId)));
     } else {
-      // Adding course
       onCoursesChange([...selectedCourses, courseId]);
     }
   };
 
   const toggleBatch = (batchId: string) => {
     if (disabled) return;
-    
     if (selectedBatches.includes(batchId)) {
-      // Removing batch
       const newBatches = selectedBatches.filter((id) => id !== batchId);
       onBatchesChange(newBatches);
-
       // Collapse the batch dropdown when deselecting
       const newExpanded = new Set(expandedBatches);
       newExpanded.delete(batchId);
       setExpandedBatches(newExpanded);
 
-      // We should unselect modules belonging to this batch's course, 
-      // UNLESS another batch from the SAME course is still selected.
       const batchObj = batches.find(b => b.id === batchId);
       if (batchObj) {
-        const otherSelectedBatchesSameCourse = newBatches.filter(bId => {
+        const others = newBatches.filter(bId => {
           const b = batches.find(bb => bb.id === bId);
           return b && b.courseId === batchObj.courseId;
         });
-
-        if (otherSelectedBatchesSameCourse.length === 0) {
-          // No other batches from this course are selected, so remove its modules
+        if (others.length === 0) {
           const courseModuleIds = (courseModulesMap[batchObj.courseId] || []).map(m => m.moduleId);
-          const newModules = selectedModules.filter(mId => !courseModuleIds.includes(mId));
-          onModulesChange(newModules);
+          onModulesChange(selectedModules.filter(mId => !courseModuleIds.includes(mId)));
         }
       }
     } else {
-      // Adding batch
       onBatchesChange([...selectedBatches, batchId]);
-      
       // Auto-expand the batch dropdown when selecting
       const newExpanded = new Set(expandedBatches);
       newExpanded.add(batchId);
@@ -120,7 +102,6 @@ export function HierarchicalInstructorSelector({
 
   const toggleModule = (moduleId: string) => {
     if (disabled) return;
-
     if (selectedModules.includes(moduleId)) {
       onModulesChange(selectedModules.filter((id) => id !== moduleId));
     } else {
@@ -171,7 +152,7 @@ export function HierarchicalInstructorSelector({
                     disabled={disabled}
                     className="w-5 h-5 rounded cursor-pointer"
                   />
-                  <span className={lex-1 font-medium text-sm }>
+                  <span className={`flex-1 font-medium text-sm ${isCoursSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
                     {course.title}
                   </span>
                   {isCoursSelected && (
@@ -211,7 +192,7 @@ export function HierarchicalInstructorSelector({
                               className="flex-1 flex items-center gap-2 p-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700/50 rounded transition-colors text-left"
                             >
                               <svg
-                                className={w-4 h-4 transition-transform }
+                                className={`w-4 h-4 transition-transform ${isBatchExpanded ? "rotate-90" : ""}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -238,7 +219,11 @@ export function HierarchicalInstructorSelector({
                                     key={module.moduleId}
                                     onClick={() => toggleModule(module.moduleId)}
                                     disabled={disabled}
-                                    className={w-full flex items-center gap-2 p-2 text-sm rounded transition-colors text-left }
+                                    className={`w-full flex items-center gap-2 p-2 text-sm rounded transition-colors text-left ${
+                                      isModuleSelected
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                                    }`}
                                   >
                                     <input
                                       type="checkbox"
