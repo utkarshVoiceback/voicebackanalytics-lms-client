@@ -226,18 +226,33 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
 
           {activeBatch && (
             <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5">
-              <div>
-                <label htmlFor="batchTitle" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
-                  Batch Title <span className="text-red-600 dark:text-red-400">*</span>
-                </label>
-                <input
-                  id="batchTitle"
-                  type="text"
-                  required
-                  value={batchTitle}
-                  onChange={(e) => setBatchTitle(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="courseName" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    Course Name
+                  </label>
+                  <input
+                    id="courseName"
+                    type="text"
+                    readOnly
+                    disabled
+                    value={activeBatch?.course?.title || ""}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="batchTitle" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
+                    Batch Title <span className="text-red-600 dark:text-red-400">*</span>
+                  </label>
+                  <input
+                    id="batchTitle"
+                    type="text"
+                    required
+                    value={batchTitle}
+                    onChange={(e) => setBatchTitle(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

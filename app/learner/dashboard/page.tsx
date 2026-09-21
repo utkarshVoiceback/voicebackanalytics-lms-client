@@ -80,6 +80,10 @@ export default function LearnerDashboardPage() {
               inProgress++;
             }
           }
+        } else if (!modulesRes.success && (modulesRes.errorCode === "BATCH_ARCHIVED" || modulesRes.message?.includes("archived"))) {
+           setError("BATCH_ARCHIVED");
+           setLoading(false);
+           return;
         }
 
         stats.push({
@@ -92,8 +96,12 @@ export default function LearnerDashboardPage() {
       }
 
       setCourseStats(stats);
-    } catch (err) {
-      setError("Failed to load dashboard data.");
+    } catch (err: any) {
+      if (err.message === "BATCH_ARCHIVED" || err.errorCode === "BATCH_ARCHIVED") {
+        setError("BATCH_ARCHIVED");
+      } else {
+        setError("Failed to load dashboard data.");
+      }
     }
     setLoading(false);
   };
@@ -112,6 +120,16 @@ export default function LearnerDashboardPage() {
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full" />
+          </div>
+        ) : error === "BATCH_ARCHIVED" ? (
+          <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl p-12 text-center">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-red-900 dark:text-red-400 mb-2">Batch Archived</h2>
+            <p className="text-red-700 dark:text-red-300">Your batch has been archived. Content is no longer accessible.</p>
           </div>
         ) : error ? (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center">

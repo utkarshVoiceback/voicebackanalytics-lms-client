@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
-import { HierarchicalInstructorSelector } from "@/app/components/HierarchicalInstructorSelector";
+import { HierarchicalInstructorSelector, BatchModuleSelection } from "@/app/components/HierarchicalInstructorSelector";
 
 export default function CreateInstructorPage() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function CreateInstructorPage() {
     email: "",
     courseIds: [] as string[],
     batchIds: [] as string[],
-    moduleIds: [] as string[],
+    batchModules: [] as BatchModuleSelection[],
   });
 
   const [allCourses, setAllCourses] = useState<any[]>([]);
@@ -89,7 +89,7 @@ export default function CreateInstructorPage() {
     e.preventDefault();
     if (formData.courseIds.length === 0) return window.alert("Please select at least one course.");
     if (formData.batchIds.length === 0) return window.alert("Please select at least one batch.");
-    if (formData.moduleIds.length === 0) return window.alert("Please select at least one module.");
+    if (formData.batchModules.length === 0) return window.alert("Please select at least one module.");
 
     setLoading(true);
 
@@ -177,10 +177,10 @@ export default function CreateInstructorPage() {
             courseModulesMap={courseModulesMap}
             selectedCourses={formData.courseIds}
             selectedBatches={formData.batchIds}
-            selectedModules={formData.moduleIds}
-            onCoursesChange={(ids) => setFormData({ ...formData, courseIds: ids })}
-            onBatchesChange={(ids) => setFormData({ ...formData, batchIds: ids })}
-            onModulesChange={(ids) => setFormData({ ...formData, moduleIds: ids })}
+            selectedModules={formData.batchModules}
+            onCoursesChange={(ids) => setFormData((prev) => ({ ...prev, courseIds: ids }))}
+            onBatchesChange={(ids) => setFormData((prev) => ({ ...prev, batchIds: ids }))}
+            onModulesChange={(selections) => setFormData((prev) => ({ ...prev, batchModules: selections }))}
             disabled={modulesLoading}
           />
 

@@ -122,6 +122,7 @@ export default function BatchListPage() {
           <option value="">All Status</option>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
+          <option value="ARCHIVED">Archived</option>
         </select>
         <button
           type="submit"
@@ -197,7 +198,9 @@ export default function BatchListPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          batch.dynamicStatus === "ACTIVE"
+                          batch.archiveProcessed
+                            ? "bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400"
+                            : batch.dynamicStatus === "ACTIVE"
                             ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
                             : batch.dynamicStatus === "ENROLLMENT_OPEN"
                             ? "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"
@@ -210,7 +213,7 @@ export default function BatchListPage() {
                             : "bg-slate-100 text-slate-700 dark:bg-slate-600/20 dark:text-slate-400"
                         }`}
                       >
-                        {batch.dynamicStatus || batch.status}
+                        {batch.archiveProcessed ? "Archived" : (batch.dynamicStatus || batch.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
