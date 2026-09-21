@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setCredentials, setAuthLoading, setAuthError } from "@/store/authSlice";
@@ -16,16 +16,28 @@ export default function LoginPage() {
   const { useCustomLogo, customLogoUrl } = useAppSelector((state) => state.appConfig);
   const router = useRouter();
 
+  useEffect(() => {
+    console.log("Component re-rendered! Current loading state:", loading);
+  }, [loading]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log("Sign In clicked, current loading state:", loading);
+    if (loading) return;
+    console.log("Dispatching setAuthLoading(true)");
     dispatch(setAuthLoading(true));
     dispatch(setAuthError(null));
 
     try {
-      const res = await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
+      console.log("Making API call...");
+      const [res] = await Promise.all([
+        apiFetch("/auth/login", {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+        }),
+        new Promise((resolve) => setTimeout(resolve, 400)),
+      ]);
+      console.log("API response received:", res);
 
       if (res.success && res.data) {
         localStorage.setItem("lms_auth_token", res.data.token);
@@ -45,8 +57,10 @@ export default function LoginPage() {
         dispatch(setAuthError(res.message || "Login failed"));
       }
     } catch (err: any) {
+      console.error("Login error:", err);
       dispatch(setAuthError("An unexpected error occurred"));
     } finally {
+      console.log("Finally block - setting loading to false");
       dispatch(setAuthLoading(false));
     }
   };

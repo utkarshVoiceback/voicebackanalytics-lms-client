@@ -39,15 +39,23 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       dispatch(setAuthError("Please fill in all fields"));
       return;
     }
+    console.log("Modal Sign In clicked, current loading state:", loading);
+    if (loading) return;
 
+    console.log("Dispatching setAuthLoading(true) from Modal");
     dispatch(setAuthLoading(true));
     dispatch(setAuthError(null));
 
     try {
-      const res = await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
+      console.log("Making API call from Modal...");
+      const [res] = await Promise.all([
+        apiFetch("/auth/login", {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+        }),
+        new Promise((resolve) => setTimeout(resolve, 400)),
+      ]);
+      console.log("Modal API response received:", res);
 
       if (res.success && res.data) {
         localStorage.setItem("lms_auth_token", res.data.token);
