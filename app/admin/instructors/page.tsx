@@ -10,13 +10,14 @@ interface Instructor {
   mobile: string;
   email: string;
   instructorModules: { module: { title: string } }[];
-  instructorBatches: { batch: { batchTitle: string } }[];
+  instructorBatches: { batch: { batchTitle: string; courseId: string; course?: { id: string; title: string } } }[];
 }
 
 export default function InstructorsPage() {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchInstructors = async () => {
     setLoading(true);
@@ -53,11 +54,14 @@ export default function InstructorsPage() {
     }
   };
 
-  const filteredInstructors = instructors.filter(
-    (i) =>
-      i.name.toLowerCase().includes(search.toLowerCase()) ||
-      i.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredInstructors = instructors.filter((i) => {
+    const q = search.toLowerCase();
+    return (
+      i.name.toLowerCase().includes(q) ||
+      i.email.toLowerCase().includes(q) ||
+      i.instructorBatches?.some((ib) => ib.batch.batchTitle.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -88,97 +92,209 @@ export default function InstructorsPage() {
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <input
             type="text"
-            placeholder="Search instructors by name or email..."
+            placeholder="Search instructors by name, email, or batch..."
             className="w-full max-w-md px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Email / Mobile</th>
-                <th className="px-6 py-4">Batches</th>
-                <th className="px-6 py-4">Modules</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                    Loading instructors...
-                  </td>
-                </tr>
-              ) : filteredInstructors.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                    No instructors found.
-                  </td>
-                </tr>
-              ) : (
-                filteredInstructors.map((instructor) => (
-                  <tr
-                    key={instructor.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+        <div className="space-y-3">
+          {loading ? (
+            <div className="px-6 py-8 text-center text-slate-500">
+              Loading instructors...
+            </div>
+          ) : filteredInstructors.length === 0 ? (
+            <div className="px-6 py-8 text-center text-slate-500">
+              No instructors found.
+            </div>
+          ) : (
+            filteredInstructors.map((instructor) => (
+              <div key={instructor.id}>
+                {/* Collapsed Row - Table Header Style */}
+                {expandedId !== instructor.id && (
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    <div
+                      onClick={() => setExpandedId(instructor.id)}
+                      className="px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <svg
+                          className="w-5 h-5 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white">{instructor.name}</div>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-slate-600 dark:text-slate-400 min-w-max mx-4">
+                        {instructor.email}<br/><span className="text-xs">{instructor.mobile}</span>
+                      </div>
+
+                      <div className="text-sm text-slate-500 dark:text-slate-400 min-w-max mx-4">
+                        {instructor.instructorBatches?.length || 0} courses
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={`/admin/instructors/${instructor.id}`}
+                          className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(instructor.id);
+                          }}
+                          className="text-red-600 dark:text-red-400 hover:underline text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Expanded Row - Card Style */}
+                {expandedId === instructor.id && (
+                  <div
+                    onClick={() => setExpandedId(null)}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                   >
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-900 dark:text-white">
-                        {instructor.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-slate-600 dark:text-slate-300">{instructor.email}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        {instructor.mobile}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[200px] overflow-hidden">
-                        {instructor.instructorBatches?.map((ib, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+                      {/* Left: Instructor Info */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-start gap-4 mb-6">
+                          <div className="flex-shrink-0">
+                            <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-500 text-white text-xl font-bold">
+                              {instructor.name.charAt(0).toUpperCase()}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{instructor.name}</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{instructor.email}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{instructor.mobile}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Assigned Courses</h4>
+                            <div className="space-y-1">
+                              {(() => {
+                                const courseSet = new Set(
+                                  instructor.instructorBatches?.map((ib) => ib.batch.course?.title || "Unknown") || []
+                                );
+                                return Array.from(courseSet).map((course) => (
+                                  <p key={course} className="text-sm text-slate-600 dark:text-slate-400">
+                                    • {course}
+                                  </p>
+                                ));
+                              })()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                          <Link
+                            href={`/admin/instructors/${instructor.id}`}
+                            className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {ib.batch.batchTitle}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[200px] overflow-hidden">
-                        {instructor.instructorModules?.map((im, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                            Edit
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(instructor.id);
+                            }}
+                            className="text-red-600 dark:text-red-400 hover:underline text-sm font-medium"
                           >
-                            {im.module.title}
-                          </span>
-                        ))}
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-3">
-                      <Link
-                        href={`/admin/instructors/${instructor.id}`}
-                        className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(instructor.id)}
-                        className="text-red-600 dark:text-red-400 hover:underline text-sm font-medium"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+
+                      {/* Right: Batch / Module Assignments */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2 mb-4">
+                          <svg className="w-5 h-5 text-slate-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 3a1 1 0 011 1v1.22l3.941 1.227A1 1 0 0116 7v5a4 4 0 01-8 0V7a1 1 0 01.059-.468L9 5.22V4a1 1 0 011-1h0zm-5 8.025V7h2v3.025A6 6 0 005 11.025zm8 0V11a6 6 0 00-2-4.975V7h2v4.025z" />
+                          </svg>
+                          <h4 className="font-semibold text-slate-900 dark:text-white">Batch / Module Assignments</h4>
+                        </div>
+
+                        {instructor.instructorBatches && instructor.instructorBatches.length > 0 ? (
+                          <div className="space-y-4 max-h-96 overflow-y-auto">
+                            {(() => {
+                              const courseMap = new Map<string, { courseTitle: string; batches: any[] }>();
+
+                              instructor.instructorBatches.forEach((ib) => {
+                                const courseId = ib.batch.courseId;
+                                const courseTitle = ib.batch.course?.title || "Unknown";
+
+                                if (!courseMap.has(courseId)) {
+                                  courseMap.set(courseId, { courseTitle, batches: [] });
+                                }
+                                courseMap.get(courseId)!.batches.push(ib);
+                              });
+
+                              return Array.from(courseMap.entries()).map(([courseId, { courseTitle, batches }]) => (
+                                <div key={courseId} className="border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+                                  <div className="bg-slate-50 dark:bg-slate-800/50 -m-3 mb-3 p-3 rounded-t">
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">📚 {courseTitle}</p>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {batches.map((ib, batchIdx) => (
+                                      <div key={batchIdx}>
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">├─ {ib.batch.batchTitle}</p>
+
+                                        {(() => {
+                                          const batchModules = instructor.instructorModules?.filter((im) => {
+                                            return instructor.instructorBatches?.some(
+                                              (b) => b.batch.courseId === ib.batch.courseId
+                                            );
+                                          }) || [];
+
+                                          return batchModules.length > 0 ? (
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                              {batchModules.map((im, modIdx) => (
+                                                <span
+                                                  key={modIdx}
+                                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                                >
+                                                  {im.module.title}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          ) : null;
+                                        })()}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 dark:text-slate-400">No batch/module assignments.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

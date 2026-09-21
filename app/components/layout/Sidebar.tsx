@@ -428,6 +428,7 @@ const instructorNav: { main: NavItem[]; sections: NavSection[] } = {
     {
       title: "TRAINING",
       items: [
+        { href: "/instructor/courses", label: "Courses", icon: icons.modules },
         { href: "/instructor/batches", label: "My Batches", icon: icons.batches },
         { href: "/instructor/modules", label: "My Modules", icon: icons.modules },
         { href: "/instructor/learners", label: "Learners", icon: icons.learners },
