@@ -391,6 +391,7 @@ const adminNav: { main: NavItem[]; sections: NavSection[] } = {
     {
       title: "SYSTEM SETTINGS",
       items: [
+        { href: "/admin/settings", label: "Settings", icon: icons.settings },
         { href: "/admin/resume-template", label: "Resume Template", icon: icons.settings },
       ],
     },

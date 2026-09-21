@@ -80,7 +80,7 @@ export default function AdminSettingsPage() {
           <div className="p-6 space-y-8">
             <div>
               <label htmlFor="days" className="block font-medium text-slate-900 dark:text-white mb-2">
-                Archive after batch ends
+               Archive Content & Communication Records After Batch Ends
               </label>
               <select
                 id="days"

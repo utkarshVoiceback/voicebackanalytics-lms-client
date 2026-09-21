@@ -9,7 +9,7 @@ interface Instructor {
   name: string;
   mobile: string;
   email: string;
-  instructorModules: { module: { title: string } }[];
+  instructorModules: { batchId: string; module: { title: string } }[];
   instructorBatches: { batch: { batchTitle: string; courseId: string; course?: { id: string; title: string } } }[];
 }
 
@@ -115,19 +115,24 @@ export default function InstructorsPage() {
                 {expandedId !== instructor.id && (
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                     <div
-                      onClick={() => setExpandedId(instructor.id)}
-                      className="px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                      className="px-6 py-4 flex items-center justify-between text-left"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <svg
-                          className="w-5 h-5 text-slate-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
+                        <button
+                          onClick={() => setExpandedId(instructor.id)}
+                          className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer"
+                          aria-label="Toggle instructor details"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
+                          {expandedId !== instructor.id ? (
+                            <svg className="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                            </svg>
+                          )}
+                        </button>
                         <div>
                           <div className="font-medium text-slate-900 dark:text-white">{instructor.name}</div>
                         </div>
@@ -138,7 +143,12 @@ export default function InstructorsPage() {
                       </div>
 
                       <div className="text-sm text-slate-500 dark:text-slate-400 min-w-max mx-4">
-                        {instructor.instructorBatches?.length || 0} courses
+                        {(() => {
+                          const courseSet = new Set(
+                            instructor.instructorBatches?.map((ib) => ib.batch.course?.id || "") || []
+                          );
+                          return courseSet.size || 0;
+                        })()} courses
                       </div>
 
                       <div className="flex items-center gap-3">
@@ -173,6 +183,18 @@ export default function InstructorsPage() {
                       {/* Left: Instructor Info */}
                       <div onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-start gap-4 mb-6">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedId(null);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer mt-0.5"
+                            aria-label="Collapse instructor details"
+                          >
+                            <svg className="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                            </svg>
+                          </button>
                           <div className="flex-shrink-0">
                             <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-500 text-white text-xl font-bold">
                               {instructor.name.charAt(0).toUpperCase()}
@@ -247,23 +269,23 @@ export default function InstructorsPage() {
                                 courseMap.get(courseId)!.batches.push(ib);
                               });
 
-                              return Array.from(courseMap.entries()).map(([courseId, { courseTitle, batches }]) => (
+                              const sortedEntries = Array.from(courseMap.entries()).sort((a, b) =>
+                                a[1].courseTitle.localeCompare(b[1].courseTitle)
+                              );
+
+                              return sortedEntries.map(([courseId, { courseTitle, batches }]) => (
                                 <div key={courseId} className="border border-slate-200 dark:border-slate-800 rounded-lg p-3">
                                   <div className="bg-slate-50 dark:bg-slate-800/50 -m-3 mb-3 p-3 rounded-t">
                                     <p className="text-sm font-semibold text-slate-900 dark:text-white">📚 {courseTitle}</p>
                                   </div>
 
                                   <div className="space-y-2">
-                                    {batches.map((ib, batchIdx) => (
+                                    {batches.sort((a, b) => a.batch.batchTitle.localeCompare(b.batch.batchTitle)).map((ib, batchIdx) => (
                                       <div key={batchIdx}>
                                         <p className="text-sm font-medium text-blue-600 dark:text-blue-400">├─ {ib.batch.batchTitle}</p>
 
                                         {(() => {
-                                          const batchModules = instructor.instructorModules?.filter((im) => {
-                                            return instructor.instructorBatches?.some(
-                                              (b) => b.batch.courseId === ib.batch.courseId
-                                            );
-                                          }) || [];
+                                          const batchModules = instructor.instructorModules?.filter((im) => im.batchId === ib.batchId) || [];
 
                                           return batchModules.length > 0 ? (
                                             <div className="flex flex-wrap gap-1 mt-1">
@@ -289,6 +311,7 @@ export default function InstructorsPage() {
                           <p className="text-sm text-slate-500 dark:text-slate-400">No batch/module assignments.</p>
                         )}
                       </div>
+
                     </div>
                   </div>
                 )}
