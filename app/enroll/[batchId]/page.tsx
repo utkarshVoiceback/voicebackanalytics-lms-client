@@ -13,6 +13,11 @@ interface FormField {
   options?: string[];
 }
 
+// Only these are true account-creation fields handled outside dynamicData (see
+// PublicEnrollmentService). Other "isStandard" library fields (profilePic, address,
+// etc.) are still dynamic/custom data and must be sent along with the rest.
+const STANDARD_ACCOUNT_FIELD_KEYS = new Set(["fullName", "email", "mobile"]);
+
 interface FormTemplateData {
   id: string;
   name: string;
@@ -143,13 +148,13 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
       const formData = new FormData();
       formData.append("fullName", dynamicValues.fullName || "");
       formData.append("email", dynamicValues.email || "");
-      formData.append("mobile", dynamicValues.mobile || "");
+      formData.append("mobileNumber", dynamicValues.mobile || "");
       formData.append("password", password);
 
-      // Add all non-standard template field values
+      // Add all non-account template field values
       if (batch?.formTemplate) {
         for (const field of batch.formTemplate.fields) {
-          if (!field.isStandard && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
+          if (!STANDARD_ACCOUNT_FIELD_KEYS.has(field.key) && field.type !== "file" && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
             formData.append(field.key, String(dynamicValues[field.key]));
           }
         }
@@ -175,10 +180,10 @@ export default function EnrollmentPage({ params }: { params: Promise<{ batchId: 
         password
       };
 
-      // Add all non-standard template field values
+      // Add all non-account template field values
       if (batch?.formTemplate) {
         for (const field of batch.formTemplate.fields) {
-          if (!field.isStandard && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
+          if (!STANDARD_ACCOUNT_FIELD_KEYS.has(field.key) && dynamicValues[field.key] !== undefined && dynamicValues[field.key] !== null && dynamicValues[field.key] !== "") {
             body[field.key] = dynamicValues[field.key];
           }
         }
