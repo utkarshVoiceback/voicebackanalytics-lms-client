@@ -6,6 +6,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { apiFetch } from "@/lib/api";
 import { logout } from "@/store/authSlice";
 import LearnerResumeCard from "@/app/learner/components/ResumeCard";
+import EditEnrollmentFieldsModal from "@/app/learner/components/EditEnrollmentFieldsModal";
+
+interface DynamicField {
+  key: string;
+  label: string;
+  type: "text" | "number" | "date" | "email" | "file" | "select" | "radio";
+  required: boolean;
+  value: string | number | null;
+  options?: string[];
+}
 
 interface ProfileData {
   id: string;
@@ -17,6 +27,7 @@ interface ProfileData {
     startDate: string;
     endDate: string;
   } | null;
+  dynamicFields?: DynamicField[];
 }
 
 interface ProgressStats {
@@ -43,6 +54,7 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [resume, setResume] = useState<any | null>(null);
+  const [showEditFieldsModal, setShowEditFieldsModal] = useState(false);
 
   const fetchResumeData = useCallback(async () => {
     try {
@@ -161,6 +173,12 @@ export default function ProfilePage() {
       .toUpperCase();
   };
 
+  const isImageUrl = (value: string) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(value);
+
+  const profilePicUrl =
+    profile?.dynamicFields?.find((f) => f.key === "profilePic" && f.value && typeof f.value === "string")
+      ?.value as string | undefined;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -197,9 +215,17 @@ export default function ProfilePage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-6">
               <div className="flex items-start gap-6">
                 {/* Avatar */}
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <span className="text-3xl font-bold text-white">{getInitials(authUser?.fullName || "")}</span>
-                </div>
+                {profilePicUrl ? (
+                  <img
+                    src={profilePicUrl}
+                    alt={authUser?.fullName || "Profile picture"}
+                    className="w-24 h-24 rounded-full object-cover flex-shrink-0 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-3xl font-bold text-white">{getInitials(authUser?.fullName || "")}</span>
+                  </div>
+                )}
 
                 {/* User Info */}
                 <div className="flex-1">
@@ -234,6 +260,57 @@ export default function ProfilePage() {
                     <span className="text-slate-500 dark:text-slate-400">End Date</span>
                     <span className="text-slate-900 dark:text-white font-medium">{formatDate(profile.batch.endDate)}</span>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Enrollment Form Details */}
+            {profile?.dynamicFields && profile.dynamicFields.length > 0 && (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  {/* <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Enrollment Form Details</h3> */}
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Other Details</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditFieldsModal(true)}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm font-medium transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {profile.dynamicFields.map((field, index) => (
+                    <div
+                      key={field.key}
+                      className={`flex items-center justify-between gap-4 ${
+                        index < profile.dynamicFields!.length - 1 ? "pb-4 border-b border-slate-200 dark:border-slate-800" : ""
+                      }`}
+                    >
+                      <span className="text-slate-500 dark:text-slate-400">{field.label}</span>
+                      {field.value === null || field.value === "" ? (
+                        <span className="text-slate-400 dark:text-slate-600 italic text-sm">Not provided</span>
+                      ) : field.type === "file" && isImageUrl(String(field.value)) ? (
+                        <a href={String(field.value)} target="_blank" rel="noopener noreferrer">
+                          <img
+                            src={String(field.value)}
+                            alt={field.label}
+                            className="w-16 h-16 rounded-lg object-cover border border-slate-200 dark:border-slate-700"
+                          />
+                        </a>
+                      ) : field.type === "file" ? (
+                        <a
+                          href={String(field.value)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium text-sm"
+                        >
+                          View File
+                        </a>
+                      ) : (
+                        <span className="text-slate-900 dark:text-white font-medium">{field.value}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -429,6 +506,17 @@ export default function ProfilePage() {
           </>
         )}
       </div>
+
+      {showEditFieldsModal && profile?.dynamicFields && (
+        <EditEnrollmentFieldsModal
+          fields={profile.dynamicFields}
+          onClose={() => setShowEditFieldsModal(false)}
+          onSaved={(updatedFields) => {
+            setProfile((prev) => (prev ? { ...prev, dynamicFields: updatedFields } : prev));
+            setShowEditFieldsModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
