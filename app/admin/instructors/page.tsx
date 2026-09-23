@@ -9,6 +9,7 @@ interface Instructor {
   name: string;
   mobile: string;
   email: string;
+  profilePhotoUrl?: string;
   instructorModules: { batchId: string; module: { title: string } }[];
   instructorBatches: { batch: { batchTitle: string; courseId: string; course?: { id: string; title: string } } }[];
 }
@@ -133,7 +134,14 @@ export default function InstructorsPage() {
                             </svg>
                           )}
                         </button>
-                        <div>
+                        <div className="flex items-center gap-3">
+                          {instructor.profilePhotoUrl ? (
+                            <img src={instructor.profilePhotoUrl} alt={instructor.name} className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                              {instructor.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                           <div className="font-medium text-slate-900 dark:text-white">{instructor.name}</div>
                         </div>
                       </div>
@@ -196,9 +204,13 @@ export default function InstructorsPage() {
                             </svg>
                           </button>
                           <div className="flex-shrink-0">
-                            <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-500 text-white text-xl font-bold">
-                              {instructor.name.charAt(0).toUpperCase()}
-                            </div>
+                            {instructor.profilePhotoUrl ? (
+                              <img src={instructor.profilePhotoUrl} alt={instructor.name} className="h-16 w-16 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" />
+                            ) : (
+                              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-500 text-white text-xl font-bold shadow-sm">
+                                {instructor.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">{instructor.name}</h3>

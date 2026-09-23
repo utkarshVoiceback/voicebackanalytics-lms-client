@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Link from "next/link";
@@ -78,11 +78,36 @@ export default function CreateInstructorPage() {
     };
   }, [formData.courseIds, courseModulesMap]);
 
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  // ref holds the current blob URL so the unmount cleanup can revoke it safely
+  const photoPreviewUrlRef = useRef<string | null>(null);
 
-
+  // Revoke blob URL only on component unmount (avoids Strict Mode double-revoke bug)
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrlRef.current) {
+        URL.revokeObjectURL(photoPreviewUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Revoke previous blob URL before creating a new one
+      if (photoPreviewUrlRef.current) {
+        URL.revokeObjectURL(photoPreviewUrlRef.current);
+      }
+      const url = URL.createObjectURL(file);
+      photoPreviewUrlRef.current = url;
+      setPhoto(file);
+      setPhotoPreviewUrl(url);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,7 +124,17 @@ export default function CreateInstructorPage() {
         body: JSON.stringify(formData),
       });
 
-      if (res.success) {
+      if (res.success && res.data) {
+        // Upload photo if selected
+        if (photo) {
+          const photoData = new FormData();
+          photoData.append("photo", photo);
+          await apiFetch(`/instructors/${res.data.id}/upload-photo`, {
+            method: "POST",
+            body: photoData,
+          });
+        }
+
         window.alert("Instructor created and credentials sent via email!");
         router.push("/admin/instructors");
       } else {
@@ -128,6 +163,51 @@ export default function CreateInstructorPage() {
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Profile Photo
+            </label>
+            <div className="flex items-center gap-4">
+              {/* Preview Circle */}
+              <div className="flex-shrink-0">
+                {photoPreviewUrl ? (
+                  <img
+                    src={photoPreviewUrl}
+                    alt="Preview"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center text-slate-400">
+                    <svg className="w-6 h-6 mb-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    <span className="text-xs">No photo</span>
+                  </div>
+                )}
+              </div>
+
+              {/* File Input + Clear */}
+              <div className="flex-1">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  onChange={handlePhotoChange}
+                  className="w-full text-sm text-slate-600 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 cursor-pointer"
+                />
+                {photoPreviewUrl && (
+                  <button
+                    type="button"
+                    onClick={() => { setPhoto(null); setPhotoPreviewUrl(null); }}
+                    className="mt-1.5 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                  >
+                    ✕ Remove photo
+                  </button>
+                )}
+                <p className="mt-1 text-xs text-slate-400">JPG, PNG, WEBP · Max 5 MB</p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Full Name <span className="text-red-500">*</span>
