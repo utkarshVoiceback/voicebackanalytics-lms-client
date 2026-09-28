@@ -71,7 +71,7 @@ export default function InstructorModulesPage() {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {filtered.map((module) => (
-                  <tr key={module.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={module.assignmentId || module.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{module.title}</td>
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{module.course?.title || "—"}</td>
                     <td className="px-6 py-4">
