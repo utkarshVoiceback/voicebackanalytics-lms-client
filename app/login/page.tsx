@@ -73,10 +73,10 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl shadow-blue-900/5 p-8 transition-colors">
           
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className={`text-center ${useCustomLogo && customLogoUrl ? "mb-2" : "mb-8"}`}>
             {useCustomLogo && customLogoUrl ? (
-              <div className="mb-4 flex justify-center">
-                <img src={customLogoUrl} alt="Logo" className="h-14 object-contain" />
+              <div className="flex justify-center">
+                <img src={customLogoUrl} alt="Logo" className="h-20 object-contain" />
               </div>
             ) : (
               <>

@@ -571,7 +571,7 @@ export default function Sidebar({ role }: SidebarProps) {
     >
       {/* ── Header ── */}
       <div
-        className={`flex items-center border-b border-slate-200 dark:border-slate-800 h-16 flex-shrink-0 ${
+        className={`flex items-center border-b border-slate-200 dark:border-slate-800 h-28 flex-shrink-0 ${
           collapsed && !isMobile
             ? "justify-center px-3"
             : "justify-between px-4"
@@ -579,12 +579,12 @@ export default function Sidebar({ role }: SidebarProps) {
       >
         {(!collapsed || isMobile) && useCustomLogo && customLogoUrl && (
           <div className="flex items-center gap-2.5 min-w-0">
-            <img src={customLogoUrl} alt="Logo" className="h-18 object-contain" />
+            <img src={customLogoUrl} alt="Logo" className="h-24 max-w-full object-contain" />
           </div>
         )}
         {collapsed && !isMobile && useCustomLogo && customLogoUrl && (
-          <div className="w-10 h-10 flex items-center justify-center">
-            <img src={customLogoUrl} alt="Logo" className="w-8 object-contain" />
+          <div className="w-12 h-12 flex items-center justify-center">
+            <img src={customLogoUrl} alt="Logo" className="w-10 object-contain" />
           </div>
         )}
         {!isMobile && (
@@ -699,10 +699,10 @@ export default function Sidebar({ role }: SidebarProps) {
       </div>
 
       {/* ── Mobile: top bar with hamburger ── */}
-      <div className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-40">
+      <div className="lg:hidden flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
           {useCustomLogo && customLogoUrl ? (
-            <img src={customLogoUrl} alt="Logo" className="h-7 object-contain" />
+            <img src={customLogoUrl} alt="Logo" className="h-10 object-contain" />
           ) : (
             <>
               <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
