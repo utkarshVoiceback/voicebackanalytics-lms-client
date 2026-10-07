@@ -109,7 +109,7 @@ export default function BannersPage() {
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Home Page Banners</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Home Page Banners</h1>
           <p className="text-slate-500 dark:text-slate-400">Manage banners displayed on the public home page</p>
         </div>
         <Link

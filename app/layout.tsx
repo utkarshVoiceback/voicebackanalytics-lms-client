@@ -4,6 +4,7 @@ import "./globals.css";
 import StoreProvider from "@/store/StoreProvider";
 import { ThemeProvider } from "@/app/components/theme/ThemeProvider";
 import ThemeScript from "@/app/components/theme/ThemeScript";
+import DynamicFavicon from "@/app/components/DynamicFavicon";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100" suppressHydrationWarning>
         <ThemeProvider>
           <StoreProvider>
+            <DynamicFavicon />
             {children}
           </StoreProvider>
         </ThemeProvider>

@@ -71,7 +71,7 @@ export default function BatchListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Batch Management</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Batch Management</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Create and manage training batches</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">

@@ -100,10 +100,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </button>
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className={`text-center ${useCustomLogo && customLogoUrl ? "mb-2" : "mb-8"}`}>
           {useCustomLogo && customLogoUrl ? (
-            <div className="mb-4 flex justify-center">
-              <img src={customLogoUrl} alt="Logo" className="h-14 object-contain" />
+            <div className="flex justify-center">
+              <img src={customLogoUrl} alt="Logo" className="h-20 object-contain" />
             </div>
           ) : (
             <>

@@ -281,7 +281,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 sm:col-span-1">
-              <AppLogo className="h-6 mb-3" />
+              <AppLogo className="h-10 mb-3" />
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                 Empowering learners worldwide with accessible, structured, quality education.
               </p>
