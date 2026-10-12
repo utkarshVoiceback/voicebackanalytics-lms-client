@@ -1,0 +1,6 @@
+# Ensure shell scripts always use LF line endings in the repo
+# so Linux containers can execute them without the "not found" error.
+*.sh text eol=lf
+
+# Default behaviour: normalize to LF on commit
+* text=auto

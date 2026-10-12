@@ -15,6 +15,8 @@ export interface Batch {
   createdAt: string;
   updatedAt: string;
   archiveProcessed?: boolean;
+  courseId?: string;
+  course?: { id: string; title: string; courseCode?: string };
 }
 
 interface BatchState {
