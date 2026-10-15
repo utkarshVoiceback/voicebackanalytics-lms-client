@@ -427,9 +427,9 @@ export default function EditBatchPage({ params }: { params: Promise<{ id: string
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center gap-3 mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Enrolled Students</h3>
-              <span className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-xs font-bold px-2 py-1 rounded-full">
+              <span className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0">
                 Total: {enrolledStudents.length}
               </span>
             </div>
