@@ -526,7 +526,9 @@ export default function Sidebar({ role }: SidebarProps) {
       apiFetch("/auth/me").then((res) => {
         if (res.success && res.data) {
           dispatch(setCredentials({ user: res.data, token }));
-        } else {
+        } else if (res.errorCode === "UNAUTHORIZED") {
+          // Only a real auth rejection clears the session; network errors /
+          // slow-or-failed backend responses must not log the user out.
           dispatch(logout());
         }
       });

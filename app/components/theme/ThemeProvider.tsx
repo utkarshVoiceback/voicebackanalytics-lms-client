@@ -4,7 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 
 export type Theme = "light" | "dark";
 
-export const THEME_STORAGE_KEY = "lms_theme";
+import { THEME_STORAGE_KEY } from "./constants";
+
+export { THEME_STORAGE_KEY };
 
 interface ThemeContextValue {
   theme: Theme;

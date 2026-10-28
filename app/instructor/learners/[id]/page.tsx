@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector } from "@/store";
 import { apiFetch } from "@/lib/api";
+import BackButton from "@/app/components/BackButton";
 
 interface Learner {
   id: string;
@@ -122,9 +123,7 @@ export default function InstructorLearnerProfilePage({ params }: { params: Promi
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Learner Not Found</h2>
         <p className="text-slate-500 dark:text-slate-400 mb-6">{error}</p>
-        <Link href="/instructor/learners" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-          ← Back to Learners
-        </Link>
+        <BackButton fallback="/instructor/learners" />
       </div>
     );
   }
@@ -135,9 +134,7 @@ export default function InstructorLearnerProfilePage({ params }: { params: Promi
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/instructor/learners" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
-          ← Back to Learners
-        </Link>
+        <BackButton fallback="/instructor/learners" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
           <div className="flex items-start gap-4">
             {(() => {
