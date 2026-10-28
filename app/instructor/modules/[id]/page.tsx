@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch, getSecureFileUrl } from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 import SecurePdfViewer from "@/app/learner/components/SecurePdfViewer";
 
 export default function InstructorModuleDetailsPage() {
@@ -194,9 +194,7 @@ export default function InstructorModuleDetailsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-8 text-center">
           <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error}</p>
-          <button onClick={() => router.push("/instructor/modules")} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors">
-            &larr; Back to My Modules
-          </button>
+          <BackButton fallback="/instructor/modules" variant="primary" />
         </div>
       </div>
     );
@@ -206,9 +204,7 @@ export default function InstructorModuleDetailsPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/instructor/modules" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block">
-          &larr; Back to My Modules
-        </Link>
+        <BackButton fallback="/instructor/modules" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-2 inline-block" />
         <div className="mt-2">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{moduleData.title}</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Course: {moduleData.course?.title || "—"}</p>

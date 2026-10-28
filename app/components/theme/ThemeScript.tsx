@@ -1,4 +1,4 @@
-import { THEME_STORAGE_KEY } from "./ThemeProvider";
+import { THEME_STORAGE_KEY } from "./constants";
 
 // Runs synchronously in <head>, before hydration, so the correct theme
 // class is on <html> before first paint (no light/dark flash). Manual
